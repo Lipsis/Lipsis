@@ -13,3 +13,8 @@ C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
 C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.exe
 C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
 C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\TappaTekie\Desktop\GIT\Lipsis\Lipsis\obj\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\GIT\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\GIT\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\TappaTekie\Desktop\GIT\Lipsis\Lipsis\bin\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\GIT\Lipsis\Lipsis\bin\Debug\Lipsis.pdb

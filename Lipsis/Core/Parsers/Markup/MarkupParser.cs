@@ -213,12 +213,12 @@ namespace Lipsis.Core {
                         //create the text element
                         if (!isEmptyData(innerTextBufferPtr, innerTextBufferPtrEnd - 1)) {
                             string str = readString(innerTextBufferPtr, innerTextBufferPtrEnd);
-                            //if (current is MarkupTextElement) {
-                            //   (current as MarkupTextElement).Text = str;
-                            //}
-                            //else {
-                                //current.AddChild(new MarkupTextElement(str));
-                            //}                            
+                            if (current is MarkupTextElement) {
+                               (current as MarkupTextElement).Text = str;
+                            }
+                            else {
+                                current.AddChild(new MarkupTextElement(textTagName, str));
+                            }                            
                         }
 
                         //reset
@@ -256,13 +256,6 @@ namespace Lipsis.Core {
 
             }
 
-            //clean up
-            IEnumerator<STRPTR> destructCurrentNameList = currentNameList.GetEnumerator();
-            while (destructCurrentNameList.MoveNext()) { 
-                deallocString(destructCurrentNameList.Current);
-            }
-
-
             //get all the elements from the parent node
             LinkedList<MarkupElement> buffer = new LinkedList<MarkupElement>();
             current = current.Root as MarkupElement;
@@ -274,6 +267,12 @@ namespace Lipsis.Core {
             }
             
             //clean up
+            IEnumerator<STRPTR> destructCurrentNameList = currentNameList.GetEnumerator();
+            while (destructCurrentNameList.MoveNext()) {
+                deallocString(destructCurrentNameList.Current);
+            }
+            destructCurrentNameList.Dispose();
+            e.Dispose();
             return buffer;
         }
 
