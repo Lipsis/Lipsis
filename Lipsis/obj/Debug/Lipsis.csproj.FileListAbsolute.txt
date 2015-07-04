@@ -1,0 +1,15 @@
+C:\Users\Carol\Documents\Visual Studio 2008\Projects\Lipsis\Lipsis\bin\Debug\Lipsis.exe
+C:\Users\Carol\Documents\Visual Studio 2008\Projects\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
+C:\Users\Carol\Documents\Visual Studio 2008\Projects\Lipsis\Lipsis\obj\Debug\Lipsis.exe
+C:\Users\Carol\Documents\Visual Studio 2008\Projects\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
+C:\Users\Carol\Documents\Visual Studio 2008\Projects\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\obj\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\bin\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
