@@ -35,7 +35,6 @@ namespace Lipsis.Core {
         public static implicit operator bool(MarkupAttribute atr) {
             string value = atr.Value;
             if (value == "1" || value == "") { return true; }
-            if (value == "0") { return false; }
             return value.ToLower() == "true";
         }
         public static implicit operator string(MarkupAttribute atr) { return atr.Value; }

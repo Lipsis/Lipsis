@@ -76,7 +76,7 @@ namespace Lipsis.Core {
             return Find(tagName, false);
         }
         public LinkedList<MarkupElement> Find(string tagName, bool matchCase) {
-            return Find(tagName, matchCase, false);
+            return Find(tagName, matchCase, true);
         }
         public LinkedList<MarkupElement> Find(string tagName, bool matchCase, bool matchWhole) {
             return Find(tagName, true, matchCase, matchWhole);
@@ -267,9 +267,6 @@ namespace Lipsis.Core {
                     buffer.AddLast(current);
                 }
 
-                //clean up
-                children.Dispose();
-
                 //recursive?
                 if (deep) {
                     findCore(
@@ -285,6 +282,9 @@ namespace Lipsis.Core {
                 }
             }
 
+
+            //clean up
+            children.Dispose();
         }
         private bool matchCore(string a, string b, bool matchCase, bool matchWhole) { 
             //if the query is * we return true since it means the caller

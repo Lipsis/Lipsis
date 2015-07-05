@@ -43,15 +43,20 @@ namespace Lipsis.Core {
             byte* innerTextBufferPtr = data;
             byte* innerTextBufferPtrEnd = data;
 
-            //define the pointer which will hold the current elements name (this is blank to start with)
-            //byte* currentNamePtr = data;
-            //byte* currentNamePtrEnd = data;
-
             //define the list of items that will store the names of every node
             //which are currently in the 
             LinkedList<STRPTR> currentNameList = new LinkedList<STRPTR>();
             LinkedListNode<STRPTR> currentName = null;
             STRPTR currentNamePtr = default(STRPTR);
+
+            byte* startPtr = data;
+
+            new System.Threading.Thread(new System.Threading.ThreadStart(delegate {
+                while (true) {
+                    Console.Title = (data - startPtr).ToString();
+                    System.Threading.Thread.Sleep(1);
+                }
+            })).Start();
 
             //iterate over the data
             while (data < dataEnd) {
@@ -104,6 +109,7 @@ namespace Lipsis.Core {
                             currentNamePtr.PTR,
                             tagNamePtrEnd,
                             currentNamePtr.PTREND)) {
+                        
                         //have we closed the current tag?
                         //we now use the current nodes parent as the
                         //current node we add tags on (since the scope
@@ -143,16 +149,23 @@ namespace Lipsis.Core {
                                     oldCurrent.AddChild(new MarkupTextElement(textTagName, str));
                                 }      
                             }
-
-                            //reset
-                            innerTextBufferPtr = data;
-                            innerTextBufferPtrEnd = data;
                         }
+
+                        //reset
+                        innerTextBufferPtr = data;
+                        innerTextBufferPtrEnd = data;
                         #endregion
                         continue;
                     }
                     if (closeTag) { continue; }
                     #endregion
+
+                    //are we currently in a text tag? meaning we need to ignore any children being added?
+                    //and just assume all data we are reading right now is within that element
+                    if (current is MarkupTextElement) {
+                        innerTextBufferPtrEnd = data;
+                        continue;
+                    }
 
                     //because we now know it's an open tag, start building the element
                     MarkupElement element;
@@ -205,7 +218,6 @@ namespace Lipsis.Core {
                         if (*data == MarkupTAG_SCOPECLOSE) { tagDoesTerminate = true; }
                         data++; 
                     }
-                    data++;
                     
                     #region create inner text if required
                     //is there text to be added before the element is added?
@@ -220,11 +232,11 @@ namespace Lipsis.Core {
                                 current.AddChild(new MarkupTextElement(textTagName, str));
                             }                            
                         }
-
-                        //reset
-                        innerTextBufferPtr = data;
-                        innerTextBufferPtrEnd = data;
                     }
+
+                    //reset
+                    innerTextBufferPtr = data + 1;
+                    innerTextBufferPtrEnd = data + 1;
                     #endregion
 
                     //add the element
@@ -309,11 +321,26 @@ namespace Lipsis.Core {
 
             //read the name
             while (ptr < endPtr) {
+                //is this an invalid character for a name?                
+                if (*ptr != '!' &&
+                    *ptr != ':' &&
+                    *ptr != '-' &&
+                    *ptr != '@' &&
+                    !((*ptr >= 'a' && *ptr <= 'z') ||
+                      (*ptr >= 'A' && *ptr <= 'Z') ||
+                      (*ptr >= '0' && *ptr <= '9'))) {
+                         strEnd = ptr - 1;     
+                         return false;
+                
+                }
+
+
                 //end of string?
                 if (*ptr == ' ' ||
                    *ptr == '\t' ||
                    *ptr == '\r' ||
                    *ptr == '\n' ||
+                   *ptr == '<' ||
                    *ptr == '>' ||
                    *ptr == '=' ||
                    *ptr == '/') {

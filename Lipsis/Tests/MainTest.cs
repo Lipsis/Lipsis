@@ -12,16 +12,16 @@ namespace Lipsis.Tests {
                 lol.AddLast("script");
                 lol.AddLast("style");
                 lol.AddLast("title");
-                lol.AddLast("script");
-                lol.AddLast("script");
+                lol.AddLast("script1");
+                lol.AddLast("script2");
 
 
                 int time = Environment.TickCount;
                 MarkupDocument doc = MarkupDocument.FromFile("test.txt", "span", lol);
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
-                var i = doc.GetElementById("Hello");
-                
+                var haha = doc.GetElementsByTagName("script");
+
                 foreach (Node n in doc.Elements) {
                     write(n, 0);
                 }
