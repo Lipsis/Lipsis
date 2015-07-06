@@ -3,3 +3,8 @@ C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\bin\Release\Lipsis.exe
 C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\bin\Release\Lipsis.pdb
 C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\obj\Release\Lipsis.exe
 C:\Users\TappaTekie\Desktop\New folder (5)\Lipsis\Lipsis\obj\Release\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Release\Lipsis.exe
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Release\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Release\Lipsis.exe
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Release\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Release\ResolveAssemblyReference.cache

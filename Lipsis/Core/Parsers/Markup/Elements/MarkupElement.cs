@@ -23,7 +23,7 @@ namespace Lipsis.Core {
             if (ret.HasValue) {
                 buffer = ret.Value;
                 buffer.Value = value;
-                p_Attributes.Find(buffer).Value = buffer;
+                p_Attributes.Find(ret.Value).Value = buffer;
             }
 
             //create the new element

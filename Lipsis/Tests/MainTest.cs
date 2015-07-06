@@ -19,13 +19,12 @@ namespace Lipsis.Tests {
                 int time = Environment.TickCount;
                 MarkupDocument doc = MarkupDocument.FromFile("test.txt", "span", lol);
                 Console.WriteLine((Environment.TickCount - time) + "ms");
-
-                var haha = doc.GetElementsByTagName("script");
-
+                continue;
+                var haha = doc.GetElementsByTagName("span");
                 foreach (Node n in doc.Elements) {
                     write(n, 0);
                 }
-                while (true) ;
+                if (haha.Count == 1) { Console.Title = "FOUND"; while (true);}
 
             }
             return;
@@ -39,7 +38,7 @@ namespace Lipsis.Tests {
 
             if ((current is MarkupTextElement))
             {
-                try { Console.WriteLine(new string(' ', indent + 1) + (current as MarkupTextElement).Text.Replace("\t", "").Replace("\n", "").Replace("\r", "")); }
+                try { Console.WriteLine(new string(' ', indent + 1) + "[[[" + (current as MarkupTextElement).Text.Replace("\t", "").Replace("\n", "").Replace("\r", "") + "]]]"); }
                 catch { }
             }
 
@@ -48,7 +47,7 @@ namespace Lipsis.Tests {
             }
 
             MarkupElement e = current as MarkupElement;
-            Console.WriteLine("</" + e.TagName + ">");
+            Console.WriteLine(new string(' ', indent) + "</" + e.TagName + ">");
         }
     }
 }

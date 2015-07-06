@@ -49,15 +49,6 @@ namespace Lipsis.Core {
             LinkedListNode<STRPTR> currentName = null;
             STRPTR currentNamePtr = default(STRPTR);
 
-            byte* startPtr = data;
-
-            new System.Threading.Thread(new System.Threading.ThreadStart(delegate {
-                while (true) {
-                    Console.Title = (data - startPtr).ToString();
-                    System.Threading.Thread.Sleep(1);
-                }
-            })).Start();
-
             //iterate over the data
             while (data < dataEnd) {
                 //is it a tag?
@@ -98,29 +89,68 @@ namespace Lipsis.Core {
                     #region read name
                     //read the name of the tag
                     byte* tagNamePtr, tagNamePtrEnd;
-                    readName(ref data, dataEnd, out tagNamePtr, out tagNamePtrEnd);
+                    readName(ref data, dataEnd, out tagNamePtr, out tagNamePtrEnd, false);
                     #endregion
 
                     #region close tag?
                     //if it's a close tag, check if the close tag is closing the current tag
-                    if (closeTag &&
-                        compareData(
+                    if (closeTag) {
+                       bool closingCurrent = compareData(
                             tagNamePtr,
                             currentNamePtr.PTR,
-                            tagNamePtrEnd,
-                            currentNamePtr.PTREND)) {
+                            tagNamePtrEnd + 1,
+                            currentNamePtr.PTREND + 1);
+                        //if (!closingCurrent) { continue; }
                         
-                        //have we closed the current tag?
-                        //we now use the current nodes parent as the
-                        //current node we add tags on (since the scope
-                        //for the node has ended).
+                        //buffer what the current tag is in case we need to add text to it
                         Node oldCurrent = current;
-                        current = current.Parent;
 
-                        //change the current name to the parents name
-                        deallocString(currentNamePtr);
-                        currentName = currentName.Previous;
-                        currentNameList.RemoveLast();
+
+                        //are we closing the current tag?
+                        //if so, we just select the parent of the current tag
+                        if (closingCurrent) {
+                            deallocString(currentNamePtr);
+                            currentName = currentName.Previous;
+                            current = current.Parent;
+                            currentNameList.RemoveLast();
+                        }
+                        else {
+                            //find how many nodes up we need to go to find
+                            //what tag is being closed
+                            LinkedListNode<STRPTR> currentSeek = currentName.Previous;
+                            Node currentSeekNode = current.Parent;
+                            while (currentSeek != null) {
+                                STRPTR currentSeekValue = currentSeek.Value;
+
+                                //if we find a match, we have the element which this tag is closing.
+                                if (compareData(
+                                    tagNamePtr,
+                                    currentSeekValue.PTR,
+                                    tagNamePtrEnd + 1,
+                                    currentSeekValue.PTREND + 1)) { 
+                                    
+                                    //select the nodes parent as the current
+                                    currentName = currentSeek.Previous;
+                                    current = currentSeekNode.Parent;
+
+                                    //clean up
+                                    while (currentName != null && currentName.Next != null) {
+                                        STRPTR dealloc = currentName.Next.Value;
+                                        currentNameList.RemoveLast();
+                                        
+                                        //causes heap corruption for some reason....
+                                        //deallocString(dealloc);
+                                    }
+                                    break;
+                                }
+
+                                currentSeek = currentSeek.Previous;
+                                currentSeekNode = currentSeekNode.Parent;
+                            }
+                        }
+
+
+                        //set the current names pointer to the new pointer 
                         if (currentName == null) {
                             currentNamePtr = default(STRPTR);
                         }
@@ -157,7 +187,6 @@ namespace Lipsis.Core {
                         #endregion
                         continue;
                     }
-                    if (closeTag) { continue; }
                     #endregion
 
                     //are we currently in a text tag? meaning we need to ignore any children being added?
@@ -174,6 +203,7 @@ namespace Lipsis.Core {
                         element = new MarkupTextElement(tagNameStr, "");
                     }
                     else { element = new MarkupElement(tagNameStr); }
+                    current.AddChild(element);
 
                     //flag to show if the tag terminates with a "/>"
                     bool tagDoesTerminate = false;
@@ -192,10 +222,13 @@ namespace Lipsis.Core {
 
                         //read the name
                         byte* attrNamePtr, attrNamePtrEnd;
-                        if (readName(ref data, dataEnd, out attrNamePtr, out attrNamePtrEnd)) { break; }
+                        if (readName(ref data, dataEnd, out attrNamePtr, out attrNamePtrEnd, false)) { break; }
                         
+                        //skip to the value
+                        if (skipWhitespaces(ref data, dataEnd)) { break; }
+
                         //read the value
-                        byte* attrValuePtr = data, attrValuePtrEnd = data;
+                        byte* attrValuePtr = data, attrValuePtrEnd = (byte*)NULLPTR;
                         if (*data == '=') {
                             data++;
                             if (skipWhitespaces(ref data, dataEnd)) { break; }
@@ -204,11 +237,12 @@ namespace Lipsis.Core {
                             readStringValue(ref data, dataEnd, out attrValuePtr, out attrValuePtrEnd);
                         }
 
+                        
+
                         //add the attribute
                         element.AddAttribute(
                             readString(attrNamePtr, attrNamePtrEnd),
                             readString(attrValuePtr, attrValuePtrEnd));
-
                     }
 
                     #endregion
@@ -238,9 +272,6 @@ namespace Lipsis.Core {
                     innerTextBufferPtr = data + 1;
                     innerTextBufferPtrEnd = data + 1;
                     #endregion
-
-                    //add the element
-                    current.AddChild(element);
 
                     //change the current name to the new element
                     //but only if the tag has not been terminated immidiately
@@ -310,7 +341,7 @@ namespace Lipsis.Core {
             Marshal.FreeCoTaskMem((IntPtr)buffer);
             return ret;           
         }
-        private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd) {
+        private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd, bool valueMode) {
             //returns false if the end of stream was NOT hit.
             strStart = endPtr;
             strEnd = (byte*)NULLPTR;
@@ -321,41 +352,41 @@ namespace Lipsis.Core {
 
             //read the name
             while (ptr < endPtr) {
-                //is this an invalid character for a name?                
-                if (*ptr != '!' &&
-                    *ptr != ':' &&
-                    *ptr != '-' &&
-                    *ptr != '@' &&
-                    !((*ptr >= 'a' && *ptr <= 'z') ||
-                      (*ptr >= 'A' && *ptr <= 'Z') ||
-                      (*ptr >= '0' && *ptr <= '9'))) {
-                         strEnd = ptr - 1;     
-                         return false;
+                //is this an invalid character for a name?    
+                if (valueMode) {
+                    //end of string?
+                    if (*ptr == ' ' ||
+                       *ptr == '\t' ||
+                       *ptr == '>' ||
+                       *ptr == '/') {
+                        strEnd = ptr - 1;
+                        return false;
+                    }
+                }
+                else { 
+                    if (*ptr != '!' &&
+                        *ptr != ':' &&
+                        *ptr != '-' &&
+                        *ptr != '@' &&
+                        !((*ptr >= 'a' && *ptr <= 'z') ||
+                          (*ptr >= 'A' && *ptr <= 'Z') ||
+                          (*ptr >= '0' && *ptr <= '9'))) {
+                             strEnd = ptr - 1;     
+                             return false;
+                    }
+                }
                 
-                }
-
-
-                //end of string?
-                if (*ptr == ' ' ||
-                   *ptr == '\t' ||
-                   *ptr == '\r' ||
-                   *ptr == '\n' ||
-                   *ptr == '<' ||
-                   *ptr == '>' ||
-                   *ptr == '=' ||
-                   *ptr == '/') {
-                       strEnd = ptr - 1;
-                       return false;
-                }
-
                 ptr++;
             }
 
             return true;
         }
+        private static unsafe bool readValue(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd) {
+            return readName(ref ptr, endPtr, out strStart, out strEnd, true);
+        }
         private static unsafe bool skipWhitespaces(ref byte* ptr, byte* endPtr) {
             //returns false if the end of stream was NOT hit.
-            while (ptr < endPtr) {
+            while (ptr < endPtr) {                
                 if (!(
                     *ptr == ' ' ||
                     *ptr == '\t' ||
@@ -363,6 +394,7 @@ namespace Lipsis.Core {
                     *ptr == '\r')) {
                         return false;
                 }
+                
                 ptr++;
             }
             return true;
@@ -380,11 +412,11 @@ namespace Lipsis.Core {
             strEnd = (byte*)NULLPTR;
 
             //is it a valid terminate charatcter? if not, we just assume it should
-            //be a readName call
+            //be a readValue call
             if (terminateChar != Markup_CHAR &&
                terminateChar != Markup_STR) {
                    ptr--;
-                   return readName(ref ptr, ptrEnd, out strPtr, out strEnd);                   
+                   return readName(ref ptr, ptrEnd, out strPtr, out strEnd, true);                   
             }
 
             //read the stream
@@ -409,6 +441,11 @@ namespace Lipsis.Core {
             return true;
         }
         private static unsafe bool compareData(byte* ptr1, byte* ptr2, byte* end1, byte* end2) { 
+            //is the length of both pointers the same?
+            if (ptr1 == end1 && ptr2 == end2) { return true; }
+            if (ptr1 == end1 || ptr2 == end2) { return false; }
+            if ((end1 - ptr1) != (end2 - ptr2)) { return false; }
+
             //check until we hit a mis-match
             while (ptr1 < end1 && ptr2 < end2) {
                 if (*ptr1++ != *ptr2++) { return false; }
@@ -420,9 +457,7 @@ namespace Lipsis.Core {
         private static unsafe bool isEmptyData(byte* ptr, byte* ptrEnd) { 
             //read throught the data. if we hit a wanted character
             //it means the data is not blank
-            string lol = "";
             while (ptr < ptrEnd) {
-                lol += (char)*ptr;
                 if (*ptr != ' ' &&
                     *ptr != '\n' &&
                     *ptr != '\r' &&
@@ -443,6 +478,17 @@ namespace Lipsis.Core {
         }
         private static unsafe void deallocString(STRPTR ptr) {
             Marshal.FreeCoTaskMem((IntPtr)ptr.PTR);
+        }
+
+
+
+        private static string sample(byte* ptr, int length) {
+            string buffer = "";
+            byte* endPtr = ptr + length;
+            while (ptr < endPtr) {
+                buffer += (char)*ptr++;
+            }
+            return buffer;
         }
 
         /*
