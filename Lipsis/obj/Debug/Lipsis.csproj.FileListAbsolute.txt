@@ -13,3 +13,13 @@ C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
 C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.exe
 C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
 C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Carol\Desktop\New folder (3)\Lipsis\Lipsis\Lipsis\obj\Debug\Lipsis.exe
+C:\Users\Carol\Desktop\New folder (3)\Lipsis\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
+C:\Users\Carol\Desktop\New folder (3)\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.exe
+C:\Users\Carol\Desktop\New folder (3)\Lipsis\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
+C:\Users\Carol\Desktop\New folder (3)\Lipsis\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\obj\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\obj\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\bin\Debug\Lipsis.exe
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\bin\Debug\Lipsis.pdb
+C:\Users\TappaTekie\Desktop\Lipsis\Lipsis\obj\Debug\ResolveAssemblyReference.cache

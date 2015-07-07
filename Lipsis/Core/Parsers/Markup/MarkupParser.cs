@@ -13,25 +13,26 @@ namespace Lipsis.Core {
         private const byte Markup_TERMINATE = (byte)'\\';
         private unsafe static void* NULLPTR = (void*)0;
 
-        public static LinkedList<MarkupElement> ParseMarkup(string data, string textTagName, LinkedList<string> textTags) {
-            return ParseMarkup(data, textTagName, textTags, new MarkupElement("{LIP_DOCUMENT}"));
+        public static LinkedList<MarkupElement> ParseMarkup(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            return ParseMarkup(data, textTagName, textTags, noScopeTags, new MarkupElement("{LIP_DOCUMENT}"));
         }
-        public static LinkedList<MarkupElement> ParseMarkup(string data, string textTagName, LinkedList<string> textTags, MarkupElement root) {
-            return ParseMarkup(Encoding.ASCII.GetBytes(data), textTagName, textTags, root);
+        public static LinkedList<MarkupElement> ParseMarkup(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+            return ParseMarkup(Encoding.ASCII.GetBytes(data), textTagName, textTags, noScopeTags, root);
         }
-        public unsafe static LinkedList<MarkupElement> ParseMarkup(byte[] data, string textTagName, LinkedList<string> textTags) {
+        public unsafe static LinkedList<MarkupElement> ParseMarkup(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
             return ParseMarkup(
                 data,
                 textTagName,
                 textTags,
+                noScopeTags,
                 new MarkupElement("{LIP_DOCUMENT}"));
         }
-        public static unsafe LinkedList<MarkupElement> ParseMarkup(byte[] data, string textTagName, LinkedList<string> textTags, MarkupElement root) {
+        public static unsafe LinkedList<MarkupElement> ParseMarkup(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
             fixed (byte* ptr = data) {
-                return ParseMarkup(ptr, data.Length, textTagName, textTags, root);
+                return ParseMarkup(ptr, data.Length, textTagName, textTags, noScopeTags, root);
             }
         }
-        public static unsafe LinkedList<MarkupElement> ParseMarkup(byte* data, int length, string textTagName, LinkedList<string>textTags, MarkupElement root) {
+        public static unsafe LinkedList<MarkupElement> ParseMarkup(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
             //define the pointer which is right at the end of the data
             byte* dataEnd = data + length;
 
@@ -76,7 +77,7 @@ namespace Lipsis.Core {
                         while (data < dataEnd - 3) {
                             if (*data == '-' &&
                                *(data + 1) == '-' &&
-                               *(data + 2) == '>') {
+                               *(data + 2) == MarkupTAG_CLOSE) {
                                    data += 3;
                                    break;
                             }
@@ -100,12 +101,10 @@ namespace Lipsis.Core {
                             currentNamePtr.PTR,
                             tagNamePtrEnd + 1,
                             currentNamePtr.PTREND + 1);
-                        //if (!closingCurrent) { continue; }
                         
                         //buffer what the current tag is in case we need to add text to it
                         Node oldCurrent = current;
-
-
+                        
                         //are we closing the current tag?
                         //if so, we just select the parent of the current tag
                         if (closingCurrent) {
@@ -134,12 +133,14 @@ namespace Lipsis.Core {
                                     current = currentSeekNode.Parent;
 
                                     //clean up
-                                    while (currentName != null && currentName.Next != null) {
-                                        STRPTR dealloc = currentName.Next.Value;
-                                        currentNameList.RemoveLast();
-                                        
-                                        //causes heap corruption for some reason....
-                                        //deallocString(dealloc);
+                                    if (currentName != null) {
+                                        while (currentName.Next != null) {
+                                            STRPTR dealloc = currentName.Next.Value;
+                                            currentNameList.RemoveLast();
+
+                                            //causes heap corruption for some reason....
+                                            //deallocString(dealloc);
+                                        }
                                     }
                                     break;
                                 }
@@ -206,7 +207,13 @@ namespace Lipsis.Core {
                     current.AddChild(element);
 
                     //flag to show if the tag terminates with a "/>"
+                    //or has no scope.
                     bool tagDoesTerminate = false;
+                    if (noScopeTags.Contains(tagNameStr.ToLower()) ||
+                        *tagNamePtr == '!' || *tagNamePtr == '@') {
+                        tagDoesTerminate = true;
+                    }
+
 
                     #region attributes
                     //read the attributes for this tag
@@ -248,7 +255,7 @@ namespace Lipsis.Core {
                     #endregion
 
                     //skip to the end of the tag
-                    while (data < dataEnd && *data != '>') {
+                    while (data < dataEnd && *data != MarkupTAG_CLOSE) {
                         if (*data == MarkupTAG_SCOPECLOSE) { tagDoesTerminate = true; }
                         data++; 
                     }
@@ -350,11 +357,10 @@ namespace Lipsis.Core {
             if (skipWhitespaces(ref ptr, endPtr)) { return true; }
             strStart = ptr;
 
-            //read the name
-            while (ptr < endPtr) {
-                //is this an invalid character for a name?    
+            //read the name/value
+            while (ptr < endPtr) {  
                 if (valueMode) {
-                    //end of string?
+                    //is this an invalid character for a value?  
                     if (*ptr == ' ' ||
                        *ptr == '\t' ||
                        *ptr == '>' ||
@@ -363,7 +369,8 @@ namespace Lipsis.Core {
                         return false;
                     }
                 }
-                else { 
+                else {
+                    //is this an invalid character for a name?  
                     if (*ptr != '!' &&
                         *ptr != ':' &&
                         *ptr != '-' &&
@@ -380,9 +387,6 @@ namespace Lipsis.Core {
             }
 
             return true;
-        }
-        private static unsafe bool readValue(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd) {
-            return readName(ref ptr, endPtr, out strStart, out strEnd, true);
         }
         private static unsafe bool skipWhitespaces(ref byte* ptr, byte* endPtr) {
             //returns false if the end of stream was NOT hit.
@@ -440,7 +444,11 @@ namespace Lipsis.Core {
 
             return true;
         }
-        private static unsafe bool compareData(byte* ptr1, byte* ptr2, byte* end1, byte* end2) { 
+
+        private static unsafe bool compareData(byte* ptr1, byte* ptr2, byte* end1, byte* end2) {
+            return compareData(ptr1, ptr2, end1, end2, false);
+        }
+        private static unsafe bool compareData(byte* ptr1, byte* ptr2, byte* end1, byte* end2, bool matchCase) { 
             //is the length of both pointers the same?
             if (ptr1 == end1 && ptr2 == end2) { return true; }
             if (ptr1 == end1 || ptr2 == end2) { return false; }
@@ -448,7 +456,17 @@ namespace Lipsis.Core {
 
             //check until we hit a mis-match
             while (ptr1 < end1 && ptr2 < end2) {
-                if (*ptr1++ != *ptr2++) { return false; }
+                //grab the 2 bytes to compare
+                byte b1 = *ptr1++;
+                byte b2 = *ptr2++;
+
+                //make both lower case?
+                if (!matchCase) {
+                    if (b1 >= 'A' && b1 <= 'Z') { b1 -= (byte)'A'; b1 += (byte)'a'; }
+                    if (b2 >= 'A' && b2 <= 'Z') { b2 -= (byte)'A'; b2 += (byte)'a'; }
+                }
+
+                if (b1 != b2) { return false; }
             }
 
             //no mis-match found after reading data, therefore, match
@@ -478,17 +496,6 @@ namespace Lipsis.Core {
         }
         private static unsafe void deallocString(STRPTR ptr) {
             Marshal.FreeCoTaskMem((IntPtr)ptr.PTR);
-        }
-
-
-
-        private static string sample(byte* ptr, int length) {
-            string buffer = "";
-            byte* endPtr = ptr + length;
-            while (ptr < endPtr) {
-                buffer += (char)*ptr++;
-            }
-            return buffer;
         }
 
         /*

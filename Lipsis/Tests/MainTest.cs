@@ -6,25 +6,28 @@ using Lipsis.Core;
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {
+            LinkedList<string> textTags = new LinkedList<string>();
+            textTags.AddLast("script");
+            textTags.AddLast("style");
+            textTags.AddLast("title");
+            LinkedList<string> noScopeTags = new LinkedList<string>();
+            noScopeTags.AddLast("meta");
+
+            long mem = Environment.WorkingSet;
+
+
             while (true)
             {
-                LinkedList<string> lol = new LinkedList<string>();
-                lol.AddLast("script");
-                lol.AddLast("style");
-                lol.AddLast("title");
-                lol.AddLast("script1");
-                lol.AddLast("script2");
-
-
+            
                 int time = Environment.TickCount;
-                MarkupDocument doc = MarkupDocument.FromFile("test.txt", "span", lol);
+                MarkupDocument doc = MarkupDocument.FromFile("test.txt", "span", textTags, noScopeTags);
+
+                var lol = doc.GetElementsByClassName("*");
+
+
                 Console.WriteLine((Environment.TickCount - time) + "ms");
-                continue;
-                var haha = doc.GetElementsByTagName("span");
-                foreach (Node n in doc.Elements) {
-                    write(n, 0);
-                }
-                if (haha.Count == 1) { Console.Title = "FOUND"; while (true);}
+
+                long newMem = Environment.WorkingSet;
 
             }
             return;

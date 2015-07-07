@@ -72,6 +72,7 @@ namespace Lipsis.Core {
         /*
             Search functions
         */
+        #region Search functions
         public LinkedList<MarkupElement> Find(string tagName) {
             return Find(tagName, false);
         }
@@ -96,25 +97,75 @@ namespace Lipsis.Core {
         public LinkedList<MarkupElement> Find(string[] query, FindMode mode) {
             return Find(query, false, mode);
         }
+        
         public LinkedList<MarkupElement> Find(string[] query, bool matchCase, FindMode mode) {
+            return Find(
+                query,
+                matchCase,
+                false,
+                mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool[] matchCase, FindMode mode) {
             return Find(query, matchCase, false, mode);
         }
+
         public LinkedList<MarkupElement> Find(string[] query, bool matchCase, bool matchWhole, FindMode mode) {
             return Find(query, true, matchCase, matchWhole, mode);
         }
-        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool matchCase, bool matchWhole, FindMode mode) { 
-            //define the initial list in which we search on. 
-            LinkedList<Node> list = Children;
+        public LinkedList<MarkupElement> Find(string[] query, bool[] matchCase, bool matchWhole, FindMode mode) {
+            return Find(query, true, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool matchCase, bool[] matchWhole, FindMode mode) {
+            return Find(query, true, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool[] matchCase, bool[] matchWhole, FindMode mode) {
+            return Find(query, true, matchCase, matchWhole, mode);
+        }
 
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool matchCase, bool matchWhole, FindMode mode) {
+            return Find(
+                query,
+                deepSearch,
+                createBoolArray(matchCase, query.Length),
+                createBoolArray(matchWhole, query.Length),
+                mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool[] matchCase, bool matchWhole, FindMode mode) {
+            return Find(
+                query,
+                deepSearch,
+                matchCase,
+                createBoolArray(matchWhole, query.Length),
+                mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool matchCase, bool[] matchWhole, FindMode mode) {
+            return Find(
+                query,
+                deepSearch,
+                createBoolArray(matchCase, query.Length),
+                matchWhole,
+                mode);
+                
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool[] matchCase, bool[] matchWhole, FindMode mode) { 
             //check to make sure that the amount of queries matches the find mode
             int minQuery = 0;
             if ((mode & FindMode.TagName) == FindMode.TagName) { minQuery++; }
             if ((mode & FindMode.AttributeName) == FindMode.AttributeName) { minQuery++; }
             if ((mode & FindMode.AttributeValue) == FindMode.AttributeValue) { minQuery++; }
             if ((mode & FindMode.Text) == FindMode.Text) { minQuery++; }
-            if (query.Length < minQuery) {
-                throw new Exception("Expected " + minQuery + " query string to match the mode \"" + mode + "\".");
+            if (query.Length != minQuery) {
+                throw new Exception("Expected " + minQuery + " query strings to match the mode \"" + mode + "\".");
             }
+            if (matchCase.Length != minQuery) {
+                throw new Exception("Expected " + minQuery + " match case options to match the mode \"" + mode + "\".");
+            }
+            if (matchWhole.Length != minQuery) {
+                throw new Exception("Expected " + minQuery + " match case options to match the mode \"" + mode + "\".");
+            }
+
+            //define the initial list in which we search on. 
+            LinkedList<Node> list = Children;
 
             /*
                 Each mode has the exact same code except we tweak the 
@@ -129,10 +180,10 @@ namespace Lipsis.Core {
             if ((mode & FindMode.TagName) == FindMode.TagName) {
                 list = Helpers.ConvertLinkedListType<Node, MarkupElement>(
                     findCore(
-                        query[querySelector++],
+                        query[querySelector],
                         deepSearch,
-                        matchCase,
-                        matchWhole,
+                        matchCase[querySelector],
+                        matchWhole[querySelector++],
                         list,
                         false,
                         false,
@@ -143,10 +194,10 @@ namespace Lipsis.Core {
             if ((mode & FindMode.AttributeName) == FindMode.AttributeName) { 
                 list = Helpers.ConvertLinkedListType<Node, MarkupElement>(
                     findCore(
-                        query[querySelector++],
+                        query[querySelector],
                         deepSearch,
-                        matchCase,
-                        matchWhole,
+                        matchCase[querySelector],
+                        matchWhole[querySelector++],
                         list,
                         false,
                         true,
@@ -157,10 +208,10 @@ namespace Lipsis.Core {
             if ((mode & FindMode.AttributeValue) == FindMode.AttributeValue) {
                 list = Helpers.ConvertLinkedListType<Node, MarkupElement>(
                     findCore(
-                        query[querySelector++],
+                        query[querySelector],
                         deepSearch,
-                        matchCase,
-                        matchWhole,
+                        matchCase[querySelector],
+                        matchWhole[querySelector++],
                         list,
                         false,
                         true,
@@ -171,10 +222,10 @@ namespace Lipsis.Core {
             if ((mode & FindMode.Text) == FindMode.Text) {
                 list = Helpers.ConvertLinkedListType<Node, MarkupElement>(
                     findCore(
-                        query[querySelector++],
+                        query[querySelector],
                         deepSearch,
-                        matchCase,
-                        matchWhole,
+                        matchCase[querySelector],
+                        matchWhole[querySelector++],
                         list,
                         true,
                         false,
@@ -299,6 +350,14 @@ namespace Lipsis.Core {
                 a == b :
                 a.Contains(b);
         }
+
+        private bool[] createBoolArray(bool vals, int length) {
+            bool[] buffer = new bool[length];
+            for (int c = 0; c < length; c++) { buffer[c] = vals; }
+            return buffer;
+        }
+
+        #endregion
 
         public override string ToString() {
             //define the buffer to return, start with the start of the tag

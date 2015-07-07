@@ -45,6 +45,7 @@
     <Compile Include="Core\Helpers\Array.cs" />
     <Compile Include="Core\Helpers\Data.cs" />
     <Compile Include="Core\Helpers\String.cs" />
+    <Compile Include="Core\Parsers\Markup\HTML\HTMLDocument.cs" />
     <Compile Include="Core\Parsers\Markup\MarkupAttribute.cs" />
     <Compile Include="Core\Parsers\Markup\Elements\MarkupElement.cs" />
     <Compile Include="Core\Parsers\Markup\MarkupDocument.cs" />
