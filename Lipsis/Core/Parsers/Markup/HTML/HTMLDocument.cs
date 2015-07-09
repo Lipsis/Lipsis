@@ -67,6 +67,8 @@ namespace Lipsis.Core {
 
 
         public static HTMLDocument FromFile(string filename) {
+            return new HTMLDocument(File.ReadAllText(filename));
+
             return new HTMLDocument(File.ReadAllBytes(filename));
         }
     }

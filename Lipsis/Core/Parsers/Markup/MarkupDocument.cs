@@ -170,7 +170,6 @@ namespace Lipsis.Core {
         public static MarkupDocument FromFile(string filename, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
             //read the file
             byte[] data = File.ReadAllBytes(filename);
-
             MarkupDocument doc = new MarkupDocument(
                 data,
                 textTagName,

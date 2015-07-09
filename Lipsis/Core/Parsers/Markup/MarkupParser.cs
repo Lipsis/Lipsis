@@ -244,12 +244,11 @@ namespace Lipsis.Core {
                             readStringValue(ref data, dataEnd, out attrValuePtr, out attrValuePtrEnd);
                         }
 
-                        
-
                         //add the attribute
                         element.AddAttribute(
                             readString(attrNamePtr, attrNamePtrEnd),
                             readString(attrValuePtr, attrValuePtrEnd));
+                        
                     }
 
                     #endregion
@@ -330,23 +329,24 @@ namespace Lipsis.Core {
             //blank string?
             if (endPtr == (byte*)NULLPTR) { return ""; }
 
-            //allocate a block of memory which has one extra byte of data at the end
-            //to serve as a null terminator so that the string constructor will know
-            //when to stop reading the pointer we send to it
+            //read the block of memory which the string is in
+            //into a buffer
             int length = (int)(endPtr - ptr) + 1;
-            char* buffer = (char*)Marshal.AllocCoTaskMem((length + 1) * sizeof(char)).ToPointer();
-            char* bufferPtr = (char*)buffer;
-            *(buffer + length) = '\0';
-                        
-            //read the data
-            while (ptr < endPtr + 1) {
-                *bufferPtr++ = (char)*ptr++;
+            byte[] buffer = new byte[length];
+            fixed (byte* locked = buffer) {
+                byte* writePtr = locked;
+                while (ptr < endPtr + 1) {
+                    *writePtr++ = *ptr++;
+                }
             }
 
+            //read the block of data as a unicode string of characters
+            string str = Encoding.UTF8.GetString(buffer, 0, length);
+
             //clean up
-            string ret = new string(buffer);
-            Marshal.FreeCoTaskMem((IntPtr)buffer);
-            return ret;           
+            buffer = null;
+            return str;
+
         }
         private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd, bool valueMode) {
             //returns false if the end of stream was NOT hit.
