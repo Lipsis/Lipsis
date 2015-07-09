@@ -15,57 +15,112 @@ namespace Lipsis.Core {
         
         public string TagName { get { return p_TagName; } }
         public LinkedList<MarkupAttribute> Attributes { get { return Helpers.CloneLinkedList(p_Attributes, null); } }
-
-        public MarkupAttribute AddAttribute(string name, string value) { 
-            //does it already exist? if so, just set its value
-            MarkupAttribute? ret = GetAttribute(name);
-            MarkupAttribute buffer = default(MarkupAttribute);
-            if (ret.HasValue) {
-                buffer = ret.Value;
-                buffer.Value = value;
-                p_Attributes.Find(ret.Value).Value = buffer;
-            }
-
+        
+        public MarkupAttribute AddAttribute(string name, string value) {
             //create the new element
-            buffer = new MarkupAttribute(name, value);
+            MarkupAttribute buffer = new MarkupAttribute(name, value);
             p_Attributes.AddLast(buffer);
             return buffer;
         }
         public void RemoveAttribute(string name) { 
             //look for the html attribute with the name
-            MarkupAttribute? ret = GetAttribute(name);
-            if (!ret.HasValue) { return; }
+            LinkedList<MarkupAttribute> remove = GetAttributes(name);
+            if (remove.Count == 0) { return; }
 
-            //remove it
-            p_Attributes.Remove(ret.Value);
+            //remove every attribute from the internal attribute linked list
+            IEnumerator<MarkupAttribute> e = remove.GetEnumerator();
+            while (e.MoveNext()) {
+                p_Attributes.Remove(e.Current);
+            }
+            e.Dispose();
+
         }
 
-        public bool HasAttribute(string name) {
-            return GetAttribute(name).HasValue;
-        }
-        public MarkupAttribute? GetAttribute(string name) { 
-            //convert the name to lower case so we can 
-            //match case-insensitivly
+        public LinkedList<MarkupAttribute> GetAttributes(string name) {
             name = name.ToLower();
 
-            //look for the attribute
+            //define the buffer to add the attriutes we find to
+            LinkedList<MarkupAttribute> buffer = new LinkedList<MarkupAttribute>();
+
+            //count how many attributes has the name
             IEnumerator<MarkupAttribute> e = p_Attributes.GetEnumerator();
             while (e.MoveNext()) {
-                if (e.Current.Name.ToLower() == name) { 
-                    //clean up
-                    MarkupAttribute a = e.Current;
-                    e.Dispose();
-                    return a;
+                MarkupAttribute current = e.Current;
+                string compare = current.Name;
+                compare = compare.ToLower();
+                if (compare == name) {
+                    buffer.AddLast(current);
                 }
             }
+            e.Dispose();
+            return buffer;
+        }
 
-            //not found
-            return null;
+        public void MergeWith(MarkupElement element) { 
+            //element cannot be a text node!
+            if (element is MarkupTextElement) {
+                throw new Exception("Unable to merge with a text element!");
+            }
+
+            //merge the elements attributes
+            MergeWith(element.Attributes);
+
+            //add all of the elements children
+            IEnumerator<Node> children = element.Children.GetEnumerator();
+            while (children.MoveNext()) {
+                element.AddChild(children.Current);
+            }
+            
+            //clean up
+            children.Dispose();
+        }
+        public void MergeWith(LinkedList<MarkupAttribute> attributes) { 
+            //enumerate over the attributes
+            IEnumerator<MarkupAttribute> e = attributes.GetEnumerator();
+            while (e.MoveNext()) {
+                MarkupAttribute current = e.Current;
+
+                //merge
+                AddAttribute(current.Name, current.Value);
+            }
+
+            //clean up
+            e.Dispose();
         }
 
         public string this[string attributeName] {
+            get { return this[attributeName, -1]; }
+            set { this[attributeName, -1] = value; }
+        }
+        public string this[string attributeName, int index] {
             get {
-                return GetAttribute(attributeName).Value.Value;
+                LinkedList<MarkupAttribute> attributes = GetAttributes(attributeName);
+                if (index == -1) { return attributes.Last.Value.Value; }
+                return
+                    Helpers.LinkedListGetValueByIndex(attributes, index)
+                    .Value.Value;
+            }
+            set {
+                LinkedList<MarkupAttribute> attributes = GetAttributes(attributeName);
+                
+                //does the attribute exist?, if not, add it
+                if (attributes.Count == 0) {
+                    AddAttribute(attributeName, value);
+                    return;
+                }
+
+                //get the attribute at the specified index
+                //if the index is -1, set the last node.
+                LinkedListNode<MarkupAttribute> node =
+                    index == -1 ?
+                        attributes.Last :
+                        Helpers.LinkedListGetValueByIndex(attributes, index);
+                node = p_Attributes.Find(node.Value);
+
+                //change the attribute value
+                MarkupAttribute newAttr = node.Value;
+                newAttr.Value = value;
+                node.Value = newAttr;
             }
         }
 
@@ -385,8 +440,7 @@ namespace Lipsis.Core {
             AttributeValue = 0x4,
             Text = 0x8,
 
-            Attribute = AttributeName | AttributeValue
-            
+            Attribute = AttributeName | AttributeValue            
         }
     }
 }

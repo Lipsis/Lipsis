@@ -59,5 +59,24 @@ namespace Lipsis.Core {
             e.Dispose();
             return buffer;
         }
+
+        public static LinkedListNode<T> LinkedListGetValueByIndex<T>(LinkedList<T> list, int index) {
+            //valid index?
+            if (index < 0 || index >= list.Count) {
+                throw new Exception("Index is out or range");
+            }
+            
+            int cIndex = 0;
+
+            //enumerate over the list until the index matches the index we want
+            LinkedListNode<T> current = list.First;
+            while (current != null) {
+                if (cIndex == index) { return current; }
+                current = current.Next;
+            }
+
+            //not found
+            throw new Exception("Index not found");
+        }
     }
 }

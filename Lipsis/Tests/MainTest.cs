@@ -20,10 +20,9 @@ namespace Lipsis.Tests {
             {
             
                 int time = Environment.TickCount;
-                MarkupDocument doc = MarkupDocument.FromFile("test.txt", "span", textTags, noScopeTags);
+                HTMLDocument doc = HTMLDocument.FromFile("test.txt");
 
-                var lol = doc.GetElementsByClassName("*");
-
+                var lol = doc.GetElementByTagName("form");
 
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
