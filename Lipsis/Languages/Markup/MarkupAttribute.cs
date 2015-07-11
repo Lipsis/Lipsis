@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lipsis.Core {
+namespace Lipsis.Languages.Markup {
 
     public struct MarkupAttribute {
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lipsis.Core;
 
-
-namespace Lipsis.Core {
+namespace Lipsis.Languages.Markup {
     public class MarkupElement : Node {
 
         private string p_TagName;

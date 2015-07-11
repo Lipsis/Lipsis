@@ -2,7 +2,8 @@
 using System.IO;
 using System.Collections.Generic;
 using Lipsis.Core;
-
+using Lipsis.Languages.Markup;
+using Lipsis.Languages.Markup.HTML;
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {

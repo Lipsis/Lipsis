@@ -45,22 +45,21 @@
     <Compile Include="Core\Helpers\Array.cs" />
     <Compile Include="Core\Helpers\Data.cs" />
     <Compile Include="Core\Helpers\String.cs" />
-    <Compile Include="Core\Parsers\CSS\Interfaces\ICapable.cs" />
-    <Compile Include="Core\Parsers\CSS\Rules\Rule.cs" />
-    <Compile Include="Core\Parsers\CSS\Rules\RuleSet.cs" />
-    <Compile Include="Core\Parsers\Markup\HTML\HTMLDocument.cs" />
-    <Compile Include="Core\Parsers\Markup\MarkupAttribute.cs" />
-    <Compile Include="Core\Parsers\Markup\Elements\MarkupElement.cs" />
-    <Compile Include="Core\Parsers\Markup\MarkupDocument.cs" />
-    <Compile Include="Core\Parsers\Markup\MarkupParser.cs" />
-    <Compile Include="Core\Parsers\Markup\Elements\MarkupTextElement.cs" />
-    <Compile Include="Core\Parsers\Markup\XML\XMLDocument.cs" />
+    <Compile Include="Languages\CSS\Rules\Rule.cs" />
+    <Compile Include="Languages\CSS\Rules\RuleSet.cs" />
+    <Compile Include="Languages\Markup\HTML\HTMLDocument.cs" />
+    <Compile Include="Languages\Markup\MarkupAttribute.cs" />
+    <Compile Include="Languages\Markup\Elements\MarkupElement.cs" />
+    <Compile Include="Languages\Markup\MarkupDocument.cs" />
+    <Compile Include="Languages\Markup\Elements\MarkupTextElement.cs" />
+    <Compile Include="Languages\Markup\XML\XMLDocument.cs" />
     <Compile Include="Tests\MainTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Core\Parsers\CSS\Selectors\" />
+    <Folder Include="Languages\CSS\Interfaces\" />
+    <Folder Include="Languages\CSS\Selectors\" />
   </ItemGroup>
 </Project>

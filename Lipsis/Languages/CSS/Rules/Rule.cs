@@ -1,4 +1,4 @@
-﻿namespace Lipsis.Core {
+﻿namespace Lipsis.Languages.CSS {
     public struct CSSRule {
         private string p_Name;
         private string p_Value;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lipsis.Core {
+namespace Lipsis.Languages.Markup {
     public sealed class MarkupTextElement : MarkupElement {
         internal MarkupTextElement(string tagName, string text) : base(tagName) {
             Text = text;

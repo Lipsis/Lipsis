@@ -2,7 +2,9 @@
 using System.Text;
 using System.Collections.Generic;
 
-namespace Lipsis.Core {
+using Lipsis.Core;
+
+namespace Lipsis.Languages.CSS {
     public unsafe class CSSRuleSet {
         private LinkedList<CSSRule> p_Rules;
 

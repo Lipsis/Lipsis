@@ -1,38 +1,213 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Lipsis.Core {
-    public static unsafe class Parsers {
+using Lipsis.Core;
+
+
+namespace Lipsis.Languages.Markup {
+    public unsafe class MarkupDocument {
         private const byte MarkupTAG_OPEN = (byte)'<';
         private const byte MarkupTAG_CLOSE = (byte)'>';
         private const byte MarkupTAG_SCOPECLOSE = (byte)'/';
         private const byte Markup_CHAR = (byte)'\'';
         private const byte Markup_STR = (byte)'"';
         private const byte Markup_TERMINATE = (byte)'\\';
-        private unsafe static void* NULLPTR = (void*)0;
+        private static void* NULLPTR = (void*)0;
 
-        public static LinkedList<MarkupElement> ParseMarkup(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
-            return ParseMarkup(data, textTagName, textTags, noScopeTags, new MarkupElement("{LIP_DOCUMENT}"));
+        private MarkupElement p_Root;
+
+        public MarkupDocument() {
+            p_Root = new MarkupElement("{LIP_DOCUMENT}");
         }
-        public static LinkedList<MarkupElement> ParseMarkup(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
-            return ParseMarkup(Encoding.ASCII.GetBytes(data), textTagName, textTags, noScopeTags, root);
+
+        #region Wrapper constructors to Parse function
+        public MarkupDocument(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            p_Root = new MarkupElement("{LIP_DOCUMENT}");
+            Parse(data, textTagName, textTags, noScopeTags, p_Root);
+            OnDocumentLoaded();
         }
-        public unsafe static LinkedList<MarkupElement> ParseMarkup(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
-            return ParseMarkup(
+        public MarkupDocument(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            p_Root = new MarkupElement("{LIP_DOCUMENT}");
+            Parse(data, textTagName, textTags, noScopeTags, p_Root);
+            OnDocumentLoaded();
+        }
+        public unsafe MarkupDocument(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            p_Root = new MarkupElement("{LIP_DOCUMENT}");
+            Parse(data, length, textTagName, textTags, noScopeTags, p_Root);
+            OnDocumentLoaded();
+        }
+        #endregion
+
+        #region Wrapper functions to MarkupElement
+        public MarkupElement Add(string name) {
+            return
+                p_Root.AddChild(new MarkupElement(name)) as MarkupElement;
+        } 
+        public void Remove(MarkupElement element) {
+            p_Root.RemoveChild(element);
+        }
+
+
+        public LinkedList<MarkupElement> Find(string tagName) {
+            return p_Root.Find(tagName);
+        }
+        public LinkedList<MarkupElement> Find(string query, bool matchCase) {
+            return p_Root.Find(query, matchCase);
+        }
+        public LinkedList<MarkupElement> Find(string query, bool matchCase, bool matchWhole) { 
+            return p_Root.Find(query, matchCase, matchWhole);
+        }
+        public LinkedList<MarkupElement> Find(string query, bool deepSearch, bool matchCase, bool matchWhole) { 
+            return p_Root.Find(query, deepSearch, matchCase, matchWhole);
+        }
+
+        
+        public LinkedList<MarkupElement> Find(string[] query, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, mode);
+        }
+
+        public LinkedList<MarkupElement> Find(string[] query, bool matchCase, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, matchCase, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool[] matchCase, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, matchCase, mode);
+        }
+
+        public LinkedList<MarkupElement> Find(string[] query, bool matchCase, bool matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool matchCase, bool[] matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool[] matchCase, bool matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool[] matchCase, bool[] matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, matchCase, matchWhole, mode);
+        }
+
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool matchCase, bool matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, deepSearch, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool[] matchCase, bool matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, deepSearch, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool matchCase, bool[] matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, deepSearch, matchCase, matchWhole, mode);
+        }
+        public LinkedList<MarkupElement> Find(string[] query, bool deepSearch, bool[] matchCase, bool[] matchWhole, MarkupElement.FindMode mode) {
+            return p_Root.Find(query, deepSearch, matchCase, matchWhole, mode);
+        }
+        #endregion
+
+        public LinkedList<MarkupElement> GetElementsByTagName(string tagName) { return Find(tagName); }
+        public LinkedList<MarkupElement> GetElementsById(string id) {
+            return Find(
+                new string[] { "id", id },
+                new bool[] { false, true },
+                new bool[] { true, true },
+                MarkupElement.FindMode.Attribute);
+        }
+        public LinkedList<MarkupElement> GetElementsByClassName(string className) {
+            //since an element can have multiple classes, allow for a multi-class search
+            string[] classNames = className.Split(' ');
+            int classNamesLength = classNames.Length;
+
+            //get all the elements with a class attribute
+            LinkedList<MarkupElement> classedElements = Find(
+                new string[] { "class" },
+                new bool[] { false },
+                new bool[] { true },
+                MarkupElement.FindMode.AttributeName);
+
+            //return all elements with a class?
+            if (className == "*") { return classedElements; }
+
+            //grab all the elements with ALL of the classes specified
+            LinkedList<MarkupElement> buffer = new LinkedList<MarkupElement>();
+            IEnumerator<MarkupElement> e = classedElements.GetEnumerator();
+            while (e.MoveNext()) {
+                string[] compare = e.Current["class"].Split(' ');
+                int compareLength = compare.Length;
+
+                //count how many names match the class name of this element
+                int match = 0;
+                for (int c = 0; c < classNamesLength; c++) {
+                    if (Array.IndexOf(compare, classNames[c]) != -1) {
+                        match++;
+
+                        if (match == classNamesLength) { break; }
+                    }
+                }
+
+                //add it? (element has all the classes we want)
+                if (match == classNamesLength) {
+                    buffer.AddLast(e.Current);
+                }
+            }
+
+            //clean up
+            e.Dispose();
+            return buffer;
+
+        }
+
+        public MarkupElement GetElementByTagName(string tagName) {
+            LinkedList<MarkupElement> result = Find(tagName);
+            if (result.Count == 0) { return null; }
+            return result.Last.Value;
+        }
+        public MarkupElement GetElementById(string id) {
+            LinkedList<MarkupElement> result = GetElementsById(id);
+            if (result.Count == 0) { return null; }
+            return result.Last.Value;
+        }
+        public MarkupElement GetElementByClassName(string className) {
+            LinkedList<MarkupElement> result = GetElementsByClassName(className);
+            if (result.Count == 0) { return null; }
+            return result.Last.Value;
+        }
+
+        #region Parser
+        public static LinkedList<MarkupElement> Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            return Parse(data, textTagName, textTags, noScopeTags);
+        }
+        public static void Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+            Parse(Encoding.ASCII.GetBytes(data), textTagName, textTags, noScopeTags, root);
+        }
+        public static LinkedList<MarkupElement> Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            MarkupElement root = new MarkupElement("{LIP_DOCUMENT");
+            
+            Parse(
                 data,
                 textTagName,
                 textTags,
                 noScopeTags,
-                new MarkupElement("{LIP_DOCUMENT}"));
+                root);
+
+
+            //get all the elements from the parent node
+            LinkedList<MarkupElement> buffer = new LinkedList<MarkupElement>();
+            LinkedList<Node> children = root.Children;
+            IEnumerator<Node> e = children.GetEnumerator();
+            while (e.MoveNext()) {
+                MarkupElement c = e.Current as MarkupElement;
+                buffer.AddLast(c);
+            }
+
+            //clean up
+            e.Dispose();
+            return buffer;
         }
-        public static unsafe LinkedList<MarkupElement> ParseMarkup(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+        public static void Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
             fixed (byte* ptr = data) {
-                return ParseMarkup(ptr, data.Length, textTagName, textTags, noScopeTags, root);
+                Parse(ptr, data.Length, textTagName, textTags, noScopeTags, root);
             }
         }
-        public static unsafe LinkedList<MarkupElement> ParseMarkup(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+        public static void Parse(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
             //define the pointer which is right at the end of the data
             byte* dataEnd = data + length;
 
@@ -321,16 +496,6 @@ namespace Lipsis.Core {
                             innerTextBufferPtrEnd)));
 
             }
-
-            //get all the elements from the parent node
-            LinkedList<MarkupElement> buffer = new LinkedList<MarkupElement>();
-            current = current.Root as MarkupElement;
-            LinkedList<Node> children = current.Children;
-            IEnumerator<Node> e = children.GetEnumerator();
-            while (e.MoveNext()) {
-                MarkupElement c = e.Current as MarkupElement;
-                buffer.AddLast(c);
-            }
             
             //clean up
             IEnumerator<STRPTR> destructCurrentNameList = currentNameList.GetEnumerator();
@@ -338,8 +503,6 @@ namespace Lipsis.Core {
                 deallocString(destructCurrentNameList.Current);
             }
             destructCurrentNameList.Dispose();
-            e.Dispose();
-            return buffer;
         }
 
         private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd, bool valueMode, bool tagHasQM, ref bool closeCharFound) {
@@ -509,6 +672,29 @@ namespace Lipsis.Core {
 
             public byte* PTR;
             public byte* PTREND;
+        }
+
+        #endregion
+
+        protected virtual void OnDocumentLoaded() { }
+        
+        public LinkedList<MarkupElement> Elements {
+            get {
+               return Helpers.ConvertLinkedListType<MarkupElement, Node>(p_Root.Children);
+            }
+        }
+        public MarkupElement Root { get { return p_Root; } }
+
+        public static MarkupDocument FromFile(string filename, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+            //read the file
+            byte[] data = File.ReadAllBytes(filename);
+            MarkupDocument doc = new MarkupDocument(
+                data,
+                textTagName,
+                textTags,
+                noScopeTags);
+            data = null;
+            return doc;
         }
     }
 }

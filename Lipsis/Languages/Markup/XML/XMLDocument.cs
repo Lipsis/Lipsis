@@ -2,7 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 
-namespace Lipsis.Core {
+namespace Lipsis.Languages.Markup.XML {
     public class XMLDocument : MarkupDocument {
         private Version p_Version;
         

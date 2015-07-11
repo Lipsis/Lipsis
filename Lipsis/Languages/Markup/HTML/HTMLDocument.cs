@@ -2,7 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 
-namespace Lipsis.Core {
+namespace Lipsis.Languages.Markup.HTML {
     public class HTMLDocument : MarkupDocument {
         private static LinkedList<string> p_NoScopeTags;
         private static LinkedList<string> p_TextTags;
