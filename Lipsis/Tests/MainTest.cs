@@ -6,31 +6,22 @@ using Lipsis.Core;
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {
-            LinkedList<string> textTags = new LinkedList<string>();
-            textTags.AddLast("script");
-            textTags.AddLast("style");
-            textTags.AddLast("title");
-            LinkedList<string> noScopeTags = new LinkedList<string>();
-            noScopeTags.AddLast("meta");
-
-            long mem = Environment.WorkingSet;
-
 
             while (true)
             {
-            
                 int time = Environment.TickCount;
                 HTMLDocument doc = HTMLDocument.FromFile("test.txt");
+
+
 
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
                 var lol = doc.GetElementByTagName("form");
 
-                string build = "";
-                write(doc.Elements.Last.Value as Node, 0, ref build);
-                File.WriteAllText("./tree.txt", build);
 
-                long newMem = Environment.WorkingSet;
+                string build = "";
+                write(doc.Root as Node, 0, ref build);
+                File.WriteAllText("./tree.txt", build);
 
             }
             return;

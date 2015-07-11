@@ -95,6 +95,7 @@ namespace Lipsis.Core {
         public string this[string attributeName, int index] {
             get {
                 LinkedList<MarkupAttribute> attributes = GetAttributes(attributeName);
+                if (attributes.Count == 0) { return null; }
                 if (index == -1) { return attributes.Last.Value.Value; }
                 return
                     Helpers.LinkedListGetValueByIndex(attributes, index)

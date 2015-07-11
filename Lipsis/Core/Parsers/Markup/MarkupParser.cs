@@ -66,6 +66,10 @@ namespace Lipsis.Core {
                         closeTag = true;
                     }
 
+                    //define whether or not the close tag character is in the
+                    //code, if it isn't, this isn't a tag
+                    bool closeCharFound = false;
+
                     #region read comment
                     //block comment? (<!--)
                     if (*data == '!' && data < dataEnd - 2 &&
@@ -90,7 +94,8 @@ namespace Lipsis.Core {
                     #region read name
                     //read the name of the tag
                     byte* tagNamePtr, tagNamePtrEnd;
-                    readName(ref data, dataEnd, out tagNamePtr, out tagNamePtrEnd, false);
+                    readName(ref data, dataEnd, out tagNamePtr, out tagNamePtrEnd, false, false, ref closeCharFound);
+                    bool tagHasQM = *tagNamePtr == '?';
                     #endregion
 
                     #region close tag?
@@ -113,7 +118,7 @@ namespace Lipsis.Core {
                             current = current.Parent;
                             currentNameList.RemoveLast();
                         }
-                        else {
+                        else if(currentName != null) {
                             //find how many nodes up we need to go to find
                             //what tag is being closed
                             LinkedListNode<STRPTR> currentSeek = currentName.Previous;
@@ -172,7 +177,7 @@ namespace Lipsis.Core {
                         if (innerTextBufferPtr != innerTextBufferPtrEnd) {
                             //create the text element
                             if (!isEmptyData(innerTextBufferPtr, innerTextBufferPtrEnd - 1)) {
-                                string str = readString(innerTextBufferPtr, innerTextBufferPtrEnd);
+                                string str = Helpers.ReadString(innerTextBufferPtr, innerTextBufferPtrEnd);
                                 if (oldCurrent is MarkupTextElement) {
                                     (oldCurrent as MarkupTextElement).Text = str;
                                 }
@@ -199,17 +204,17 @@ namespace Lipsis.Core {
 
                     //because we now know it's an open tag, start building the element
                     MarkupElement element;
-                    string tagNameStr = readString(tagNamePtr, tagNamePtrEnd);
+                    string tagNameStr = Helpers.ReadString(tagNamePtr, tagNamePtrEnd);
                     if (textTags.Contains(tagNameStr.ToLower())) {
                         element = new MarkupTextElement(tagNameStr, "");
                     }
                     else { element = new MarkupElement(tagNameStr); }
-                    current.AddChild(element);
-
+                    
                     //flag to show if the tag terminates with a "/>"
                     //or has no scope.
                     bool tagDoesTerminate = false;
-                    if (noScopeTags.Contains(tagNameStr.ToLower()) ||
+                    if (tagHasQM ||
+                        noScopeTags.Contains(tagNameStr.ToLower()) ||
                         *tagNamePtr == '!' || *tagNamePtr == '@') {
                         tagDoesTerminate = true;
                     }
@@ -220,6 +225,7 @@ namespace Lipsis.Core {
                     while (data < dataEnd) {
                         skipWhitespaces(ref data, dataEnd);
                         if (*data == MarkupTAG_CLOSE) { break; }
+                        if (tagHasQM && *data == '?') { break; }
 
                         //tag closed?
                         if (*data == MarkupTAG_SCOPECLOSE) {
@@ -229,7 +235,7 @@ namespace Lipsis.Core {
 
                         //read the name
                         byte* attrNamePtr, attrNamePtrEnd;
-                        if (readName(ref data, dataEnd, out attrNamePtr, out attrNamePtrEnd, false)) { break; }
+                        if (readName(ref data, dataEnd, out attrNamePtr, out attrNamePtrEnd, false, tagHasQM, ref closeCharFound)) { break; }
                         
                         //skip to the value
                         if (skipWhitespaces(ref data, dataEnd)) { break; }
@@ -241,13 +247,13 @@ namespace Lipsis.Core {
                             if (skipWhitespaces(ref data, dataEnd)) { break; }
 
                             //read the value
-                            readStringValue(ref data, dataEnd, out attrValuePtr, out attrValuePtrEnd);
+                            readStringValue(ref data, dataEnd, out attrValuePtr, out attrValuePtrEnd, tagHasQM, ref closeCharFound);
                         }
 
                         //add the attribute
                         element.AddAttribute(
-                            readString(attrNamePtr, attrNamePtrEnd),
-                            readString(attrValuePtr, attrValuePtrEnd));
+                            Helpers.ReadString(attrNamePtr, attrNamePtrEnd),
+                            Helpers.ReadString(attrValuePtr, attrValuePtrEnd));
                         
                     }
 
@@ -258,13 +264,14 @@ namespace Lipsis.Core {
                         if (*data == MarkupTAG_SCOPECLOSE) { tagDoesTerminate = true; }
                         data++; 
                     }
+                    if (*data == MarkupTAG_CLOSE) { closeCharFound = true; }
                     
                     #region create inner text if required
                     //is there text to be added before the element is added?
                     if (innerTextBufferPtr != innerTextBufferPtrEnd) { 
                         //create the text element
                         if (!isEmptyData(innerTextBufferPtr, innerTextBufferPtrEnd - 1)) {
-                            string str = readString(innerTextBufferPtr, innerTextBufferPtrEnd);
+                            string str = Helpers.ReadString(innerTextBufferPtr, innerTextBufferPtrEnd);
                             if (current is MarkupTextElement) {
                                (current as MarkupTextElement).Text = str;
                             }
@@ -278,6 +285,16 @@ namespace Lipsis.Core {
                     innerTextBufferPtr = data + 1;
                     innerTextBufferPtrEnd = data + 1;
                     #endregion
+
+                    //is this a valid tag?
+                    if (!closeCharFound) {
+                        //just presume what we just processed was text
+                        innerTextBufferPtrEnd = data;
+                        continue;
+                    }
+
+                    //add the tag
+                    current.AddChild(element);
 
                     //change the current name to the new element
                     //but only if the tag has not been terminated immidiately
@@ -299,7 +316,7 @@ namespace Lipsis.Core {
                 !isEmptyData(innerTextBufferPtr, innerTextBufferPtrEnd - 1)) {
                     current.AddChild(new MarkupTextElement(
                         textTagName,
-                        readString(
+                        Helpers.ReadString(
                             innerTextBufferPtr,
                             innerTextBufferPtrEnd)));
 
@@ -325,30 +342,7 @@ namespace Lipsis.Core {
             return buffer;
         }
 
-        private static unsafe string readString(byte* ptr, byte* endPtr) {
-            //blank string?
-            if (endPtr == (byte*)NULLPTR) { return ""; }
-
-            //read the block of memory which the string is in
-            //into a buffer
-            int length = (int)(endPtr - ptr) + 1;
-            byte[] buffer = new byte[length];
-            fixed (byte* locked = buffer) {
-                byte* writePtr = locked;
-                while (ptr < endPtr + 1) {
-                    *writePtr++ = *ptr++;
-                }
-            }
-
-            //read the block of data as a unicode string of characters
-            string str = Encoding.UTF8.GetString(buffer, 0, length);
-
-            //clean up
-            buffer = null;
-            return str;
-
-        }
-        private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd, bool valueMode) {
+        private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd, bool valueMode, bool tagHasQM, ref bool closeCharFound) {
             //returns false if the end of stream was NOT hit.
             strStart = endPtr;
             strEnd = (byte*)NULLPTR;
@@ -364,7 +358,9 @@ namespace Lipsis.Core {
                     if (*ptr == ' ' ||
                        *ptr == '\t' ||
                        *ptr == '>' ||
-                       *ptr == '/') {
+                       *ptr == '/' ||
+                       (tagHasQM && *ptr == '?')) {
+                        if (*ptr == '>') { closeCharFound = true; }
                         strEnd = ptr - 1;
                         return false;
                     }
@@ -372,12 +368,14 @@ namespace Lipsis.Core {
                 else {
                     //is this an invalid character for a name?  
                     if (*ptr != '!' &&
+                        (!tagHasQM ? *ptr != '?' : true) &&
                         *ptr != ':' &&
                         *ptr != '-' &&
                         *ptr != '@' &&
                         !((*ptr >= 'a' && *ptr <= 'z') ||
                           (*ptr >= 'A' && *ptr <= 'Z') ||
                           (*ptr >= '0' && *ptr <= '9'))) {
+                             if (*ptr == '?') { closeCharFound = true; }
                              strEnd = ptr - 1;     
                              return false;
                     }
@@ -403,7 +401,7 @@ namespace Lipsis.Core {
             }
             return true;
         }
-        private static unsafe bool readStringValue(ref byte* ptr, byte* ptrEnd, out byte* strPtr, out byte* strEnd) { 
+        private static unsafe bool readStringValue(ref byte* ptr, byte* ptrEnd, out byte* strPtr, out byte* strEnd, bool tagHasQM, ref bool closeCharFound) { 
             /*
                 this function assumes that ptr is on a non-whitespace character
              * 
@@ -420,7 +418,7 @@ namespace Lipsis.Core {
             if (terminateChar != Markup_CHAR &&
                terminateChar != Markup_STR) {
                    ptr--;
-                   return readName(ref ptr, ptrEnd, out strPtr, out strEnd, true);                   
+                   return readName(ref ptr, ptrEnd, out strPtr, out strEnd, true, tagHasQM, ref closeCharFound);                   
             }
 
             //read the stream

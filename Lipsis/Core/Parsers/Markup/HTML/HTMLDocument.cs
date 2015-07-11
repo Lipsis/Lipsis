@@ -18,14 +18,15 @@ namespace Lipsis.Core {
             string[] textTags = { 
                 "title",
                 "script",
-                "style"
+                "style",
+                "a",
+                "pre"
             };
             foreach (string s in noScopeTags) { p_NoScopeTags.AddLast(s); }
             foreach (string s in textTags) { p_TextTags.AddLast(s); }           
-
         }
 
-        #region Wraper constructors for MarkupDocument
+        #region Wrapper constructors for MarkupDocument
         public HTMLDocument() : base() { }
         public HTMLDocument(string data) : base(data, "span", p_TextTags, p_NoScopeTags) { }
         public HTMLDocument(byte[] data) : base(data, "span", p_TextTags, p_NoScopeTags) { }
@@ -67,8 +68,6 @@ namespace Lipsis.Core {
 
 
         public static HTMLDocument FromFile(string filename) {
-            return new HTMLDocument(File.ReadAllText(filename));
-
             return new HTMLDocument(File.ReadAllBytes(filename));
         }
     }

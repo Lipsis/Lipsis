@@ -1,7 +1,33 @@
 ﻿using System;
+using System.Text;
 
 namespace Lipsis.Core {
     public static partial class Helpers {
+        public static unsafe string ReadString(byte* ptr, byte* endPtr) {
+            //blank string?
+            if (endPtr == (byte*)0) { return ""; }
+
+            //read the block of memory which the string is in
+            //into a buffer
+            int length = (int)(endPtr - ptr) + 1;
+            byte[] buffer = new byte[length];
+            fixed (byte* locked = buffer) {
+                byte* writePtr = locked;
+                while (ptr < endPtr + 1) {
+                    *writePtr++ = *ptr++;
+                }
+            }
+
+            //read the block of data as a unicode string of characters
+            string str = Encoding.UTF8.GetString(buffer, 0, length);
+
+            //clean up
+            buffer = null;
+            return str;
+
+        }
+        
+
         public static string FlattenToString<T>(T[] array, string seperator) {
             //create the string to return and buffer the length of the array
             //so we dont have to make calls to the Length property per iteration.
