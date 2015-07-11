@@ -45,8 +45,18 @@
     <Compile Include="Core\Helpers\Array.cs" />
     <Compile Include="Core\Helpers\Data.cs" />
     <Compile Include="Core\Helpers\String.cs" />
+    <Compile Include="Languages\CSS\Declaration.cs" />
     <Compile Include="Languages\CSS\Rules\Rule.cs" />
     <Compile Include="Languages\CSS\Rules\RuleSet.cs" />
+    <Compile Include="Languages\CSS\Selectors\Attribute.cs" />
+    <Compile Include="Languages\CSS\Selectors\Enums\AttributeCompareType.cs" />
+    <Compile Include="Languages\CSS\Selectors\Enums\ElementTargetType.cs" />
+    <Compile Include="Languages\CSS\Selectors\Enums\ParentRelationship.cs" />
+    <Compile Include="Languages\CSS\Selectors\Enums\PseudoClass.cs" />
+    <Compile Include="Languages\CSS\Selectors\Enums\PseudoElement.cs" />
+    <Compile Include="Languages\CSS\Selectors\Selector.cs" />
+    <Compile Include="Languages\CSS\Selectors\Type.cs" />
+    <Compile Include="Languages\CSS\Sheet.cs" />
     <Compile Include="Languages\Markup\HTML\HTMLDocument.cs" />
     <Compile Include="Languages\Markup\MarkupAttribute.cs" />
     <Compile Include="Languages\Markup\Elements\MarkupElement.cs" />
@@ -57,9 +67,5 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Languages\CSS\Interfaces\" />
-    <Folder Include="Languages\CSS\Selectors\" />
   </ItemGroup>
 </Project>

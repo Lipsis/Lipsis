@@ -4,22 +4,25 @@ using System.Collections.Generic;
 using Lipsis.Core;
 using Lipsis.Languages.Markup;
 using Lipsis.Languages.Markup.HTML;
+using Lipsis.Languages.CSS;
+
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {
+
+            CSSSheet sheet = CSSSheet.Parse(File.ReadAllText("css.txt"));
 
             while (true)
             {
                 int time = Environment.TickCount;
                 HTMLDocument doc = HTMLDocument.FromFile("test.txt");
 
-
-
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
                 var lol = doc.GetElementByTagName("form");
 
-
+                CSSSelector selector = CSSSelector.Parse(File.ReadAllText("css.txt"));
+                
                 string build = "";
                 write(doc.Root as Node, 0, ref build);
                 File.WriteAllText("./tree.txt", build);

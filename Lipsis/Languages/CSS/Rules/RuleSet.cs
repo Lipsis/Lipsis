@@ -36,7 +36,6 @@ namespace Lipsis.Languages.CSS {
 
             //read the data
             while (data < dataEnd) {
-
                 #region skip comments
                 //block comment? (/**/)
                 if (*data == '/' && data < dataEnd - 2 && *(data + 1) == '*') { 
@@ -49,7 +48,7 @@ namespace Lipsis.Languages.CSS {
                 #endregion
 
                 //we hit the end of a scope?
-                if (*data == '}') { data++; break; }
+                if (*data == '}') { break; }
 
                 //have we hit an alphadecimal character?
                 if (isNameValueCharacter(*data)) {                    

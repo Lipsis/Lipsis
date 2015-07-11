@@ -27,6 +27,22 @@ namespace Lipsis.Core {
 
         }
         
+        public static unsafe bool SkipWhitespaces(ref byte* ptr, byte* endPtr) {
+            //returns false if the end of stream was NOT hit.
+            while (ptr < endPtr) {                
+                if (!(
+                    *ptr == ' ' ||
+                    *ptr == '\t' ||
+                    *ptr == '\n' ||
+                    *ptr == '\r')) {
+                        return false;
+                }
+                
+                ptr++;
+            }
+            return true;
+        }
+        
 
         public static string FlattenToString<T>(T[] array, string seperator) {
             //create the string to return and buffer the length of the array

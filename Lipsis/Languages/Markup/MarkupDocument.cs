@@ -235,7 +235,7 @@ namespace Lipsis.Languages.Markup {
 
                     //is the tag we are about to read, a close tag?
                     bool closeTag = false;
-                    skipWhitespaces(ref data, dataEnd);
+                    Helpers.SkipWhitespaces(ref data, dataEnd);
                     if (*data == MarkupTAG_SCOPECLOSE) {
                         data++;
                         closeTag = true;
@@ -398,7 +398,7 @@ namespace Lipsis.Languages.Markup {
                     #region attributes
                     //read the attributes for this tag
                     while (data < dataEnd) {
-                        skipWhitespaces(ref data, dataEnd);
+                        Helpers.SkipWhitespaces(ref data, dataEnd);
                         if (*data == MarkupTAG_CLOSE) { break; }
                         if (tagHasQM && *data == '?') { break; }
 
@@ -413,13 +413,13 @@ namespace Lipsis.Languages.Markup {
                         if (readName(ref data, dataEnd, out attrNamePtr, out attrNamePtrEnd, false, tagHasQM, ref closeCharFound)) { break; }
                         
                         //skip to the value
-                        if (skipWhitespaces(ref data, dataEnd)) { break; }
+                        if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
 
                         //read the value
                         byte* attrValuePtr = data, attrValuePtrEnd = (byte*)NULLPTR;
                         if (*data == '=') {
                             data++;
-                            if (skipWhitespaces(ref data, dataEnd)) { break; }
+                            if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
 
                             //read the value
                             readStringValue(ref data, dataEnd, out attrValuePtr, out attrValuePtrEnd, tagHasQM, ref closeCharFound);
@@ -511,7 +511,7 @@ namespace Lipsis.Languages.Markup {
             strEnd = (byte*)NULLPTR;
 
             //skip whitespaces so we are sure we are at the start of the name
-            if (skipWhitespaces(ref ptr, endPtr)) { return true; }
+            if (Helpers.SkipWhitespaces(ref ptr, endPtr)) { return true; }
             strStart = ptr;
 
             //read the name/value
@@ -547,21 +547,6 @@ namespace Lipsis.Languages.Markup {
                 ptr++;
             }
 
-            return true;
-        }
-        private static unsafe bool skipWhitespaces(ref byte* ptr, byte* endPtr) {
-            //returns false if the end of stream was NOT hit.
-            while (ptr < endPtr) {                
-                if (!(
-                    *ptr == ' ' ||
-                    *ptr == '\t' ||
-                    *ptr == '\n' ||
-                    *ptr == '\r')) {
-                        return false;
-                }
-                
-                ptr++;
-            }
             return true;
         }
         private static unsafe bool readStringValue(ref byte* ptr, byte* ptrEnd, out byte* strPtr, out byte* strEnd, bool tagHasQM, ref bool closeCharFound) { 
