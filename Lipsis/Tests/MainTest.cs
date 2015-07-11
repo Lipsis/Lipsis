@@ -17,6 +17,16 @@ namespace Lipsis.Tests {
                 int time = Environment.TickCount;
                 HTMLDocument doc = HTMLDocument.FromFile("test.txt");
 
+
+                foreach (MarkupElement e in doc.Find("style")) {
+                    if (e["src"] != null) { continue; }
+
+                    CSSSheet s = CSSSheet.Parse((e as MarkupTextElement).Text);
+
+                    continue;
+                }
+
+
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
                 var lol = doc.GetElementByTagName("form");

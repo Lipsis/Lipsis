@@ -37,8 +37,7 @@ namespace Lipsis.Languages.CSS {
         }
         public static CSSSheet Parse(ref byte* data, byte* dataEnd) {
             CSSSheet sheet = new CSSSheet();
-
-            
+                   
             //read the declarations
             while (data < dataEnd) {
                 //read selectors

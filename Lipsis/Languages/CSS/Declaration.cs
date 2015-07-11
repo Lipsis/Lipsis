@@ -33,6 +33,9 @@ namespace Lipsis.Languages.CSS {
         public CSSRule AddRule(string name, string value) {
             return p_Ruleset.AddRule(name, value);
         }
+        public bool RemoveRule(string name) {
+            return p_Ruleset.RemoveRule(name);
+        }
 
         public LinkedList<CSSSelector> Selectors { get { return p_Selectors; } }
         public CSSRuleSet RuleSet { get { return p_Ruleset; } }

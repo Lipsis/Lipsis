@@ -83,7 +83,7 @@ namespace Lipsis.Languages.CSS {
                 #region read the name
                 //read the name (only this selector is not *)
                 byte* namePtr, nameEnd;
-                readName(ref data, dataEnd, out namePtr, out nameEnd);
+                if (readName(ref data, dataEnd, out namePtr, out nameEnd)) { return new CSSSelector(buffer); }
                 #endregion
 
                 #region read the attributes
@@ -108,7 +108,7 @@ namespace Lipsis.Languages.CSS {
                 #endregion
 
                 //read until we hit either a scope open or pseudo element/class character
-                Helpers.SkipWhitespaces(ref data, dataEnd);
+                if (Helpers.SkipWhitespaces(ref data, dataEnd)) { return new CSSSelector(buffer); }
                 if(*data == '[') {
                     while (data < dataEnd) {
                         if (*data == '{' ||
@@ -122,7 +122,7 @@ namespace Lipsis.Languages.CSS {
                             //skip to where the name begins
                             Helpers.SkipWhitespaces(ref data, dataEnd);
                             byte* attributeNamePtr, attributeNameEndPtr;
-                            readName(ref data, dataEnd, out attributeNamePtr, out attributeNameEndPtr);
+                            if (readName(ref data, dataEnd, out attributeNamePtr, out attributeNameEndPtr)) { break; }
                             #endregion
 
                             #region read comparison type
@@ -146,7 +146,7 @@ namespace Lipsis.Languages.CSS {
                             //read the value
                             Helpers.SkipWhitespaces(ref data, dataEnd);
                             byte* valuePtr, valuePtrEnd;
-                            readStringValue(ref data, dataEnd, out valuePtr, out valuePtrEnd);
+                            if (readStringValue(ref data, dataEnd, out valuePtr, out valuePtrEnd)) { break; }
                             #endregion
 
                             //read to the end of the attribute
@@ -187,7 +187,7 @@ namespace Lipsis.Languages.CSS {
 
                     //read the pseudo
                     byte* pseudoPtr, pseudoPtrEnd;
-                    readName(ref data, dataEnd, out pseudoPtr, out pseudoPtrEnd);
+                    if (readName(ref data, dataEnd, out pseudoPtr, out pseudoPtrEnd)) { break; }
 
                     //process the name
                     bool found = false;
@@ -216,7 +216,7 @@ namespace Lipsis.Languages.CSS {
                     //read the value
                     Helpers.SkipWhitespaces(ref data, dataEnd);
                     byte* argumentPtr, argumentPtrEnd;
-                    readStringValue(ref data, dataEnd, out argumentPtr, out argumentPtrEnd);
+                    if (readStringValue(ref data, dataEnd, out argumentPtr, out argumentPtrEnd)) { break; }
 
                     //go to the end of the argument scope
                     while (data < dataEnd && *data++ != ')') ;
@@ -270,19 +270,20 @@ namespace Lipsis.Languages.CSS {
             }
         }
 
-        private static void readName(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) {
+        private static bool readName(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) {
             //read the name
             strPtr = data;
             strEnd = (byte*)0;
             while (data < dataEnd) {
                 if (!isNameChar(*data)) {
                     strEnd = data - 1;
-                    break;
+                    return false;
                 }
                 data++;
             }
+            return true;
         }
-        private static void readStringValue(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) { 
+        private static bool readStringValue(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) { 
             //we assume the pointer is at the beginning of the value
             byte terminate = *data;
             strEnd = (byte*)0;
@@ -293,11 +294,11 @@ namespace Lipsis.Languages.CSS {
                 while (data < dataEnd) {
                     if (isWhitespace(*data)) {
                         strEnd = data - 1;
-                        break;
+                        return false;;
                     }
                     data++;
                 }
-                return;
+                return true;
             }
 
             //read through the data
@@ -307,7 +308,7 @@ namespace Lipsis.Languages.CSS {
                 if (*data == terminate) {
                     strEnd = data - 1;
                     data++;
-                    return;
+                    return false;
                 }
 
                 //ignore next character?
@@ -318,6 +319,8 @@ namespace Lipsis.Languages.CSS {
 
                 data++;
             }
+
+            return true;
         }
         #endregion
     }

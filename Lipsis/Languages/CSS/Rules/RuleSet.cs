@@ -17,6 +17,73 @@ namespace Lipsis.Languages.CSS {
             p_Rules.AddLast(buffer);
             return buffer;
         }
+        public bool RemoveRule(string name) { 
+            //get the rules that have the name specified
+            LinkedList<CSSRule> rules = GetRules(name);
+            if (rules.Count == 0) { return false; }
+
+            //count how many success remove calls we have 
+            //on the linked list and return true if the 
+            //amount of removed meets the amount we needed
+            //to remove.
+            int count = 0;
+            IEnumerator<CSSRule> e = rules.GetEnumerator();
+            while (e.MoveNext()) {
+                if (p_Rules.Remove(e.Current)) { count++; }
+            }
+
+            //clean up
+            e.Dispose();
+            return count == rules.Count;
+        }
+
+        public LinkedList<CSSRule> GetRules(string name) {
+            LinkedList<CSSRule> buffer = new LinkedList<CSSRule>();
+            name = name.ToLower();
+
+            //look for all the rules with the name specified
+            IEnumerator<CSSRule> e = p_Rules.GetEnumerator();
+            while (e.MoveNext()) {
+                CSSRule current = e.Current;
+                if (current.Name.ToLower() == name) {
+                    buffer.AddLast(current);
+                }
+            }
+
+            //clean up
+            e.Dispose();
+            return buffer;
+        }
+
+        public string this[string name]  {
+            get {
+                LinkedList<CSSRule> rules = GetRules(name);
+                if (rules.Count == 0) { return null; }
+                return rules.Last.Value.Value;
+            }
+            set {
+                LinkedList<CSSRule> rules = GetRules(name);
+                
+                //add?
+                if (rules.Count == 0) {
+                    AddRule(name, value);
+                    return;
+                }
+
+                //set the value of the last rule we found
+                LinkedListNode<CSSRule> last = rules.Last;
+                CSSRule rule = last.Value;
+                rule.Value = value;
+                last.Value = rule;
+            }
+        }
+        public string this[string name, int index] {
+            get {
+                return Helpers.LinkedListGetValueByIndex(
+                    GetRules(name),
+                    index).Value.Value;
+            }
+        }
 
         public static CSSRuleSet Parse(string data) {
             return Parse(Encoding.ASCII.GetBytes(data));
