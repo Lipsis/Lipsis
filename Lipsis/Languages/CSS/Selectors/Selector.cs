@@ -57,11 +57,12 @@ namespace Lipsis.Languages.CSS {
                 #endregion
                 
                 #region relationship definition?
-                if (*data == '~' || *data == '>' || *data == '+') {
+                if (*data == '~' || *data == '>' || *data == '+' || *data == '|') {
                     switch ((char)*data) {
                         case '~': preRelation = CSSSelectorPreSelectorRelationship.GeneralSibling; break;
                         case '>': preRelation = CSSSelectorPreSelectorRelationship.ImmidiateChild; break;
                         case '+': preRelation = CSSSelectorPreSelectorRelationship.AdjacentSibling; break;
+                        case '|': preRelation = CSSSelectorPreSelectorRelationship.NamespaceChild; break;
                     }
                     data++;
                     continue;
@@ -225,13 +226,14 @@ namespace Lipsis.Languages.CSS {
                 #endregion
 
                 //add the selector
-                buffer.AddLast(new CSSSelectorType(
+                CSSSelectorType selectorType = new CSSSelectorType(
                     Helpers.ReadString(namePtr, nameEnd),
                     type,
                     attributes,
                     pseudoClass,
                     pseudoElement,
-                    preRelation));
+                    preRelation);
+                buffer.AddLast(selectorType);
 
                 //reset the pre-relation
                 preRelation = CSSSelectorPreSelectorRelationship.GeneralChild;
@@ -270,7 +272,7 @@ namespace Lipsis.Languages.CSS {
             }
         }
 
-        private static bool readName(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) {
+        internal static bool readName(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) {
             //read the name
             strPtr = data;
             strEnd = (byte*)0;
@@ -283,7 +285,7 @@ namespace Lipsis.Languages.CSS {
             }
             return true;
         }
-        private static bool readStringValue(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) { 
+        internal static bool readStringValue(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) { 
             //we assume the pointer is at the beginning of the value
             byte terminate = *data;
             strEnd = (byte*)0;
@@ -323,5 +325,33 @@ namespace Lipsis.Languages.CSS {
             return true;
         }
         #endregion
+        
+        public override string ToString() {
+            string buffer = "";
+            
+            //get the array of types
+            CSSSelectorType[] types = Helpers.LinkedListToArray(p_Types);
+            
+            //add each selector and it's pre-relation character 
+            for (int c = 0; c < types.Length; c++) {
+                if (types[c].PreSelectorRelationship == CSSSelectorPreSelectorRelationship.NamespaceChild) {
+                    buffer += "|";
+                }
+
+                if (c != 0) {
+                    switch (types[c].PreSelectorRelationship) {
+                        case CSSSelectorPreSelectorRelationship.GeneralChild: buffer += " "; break;
+                        case CSSSelectorPreSelectorRelationship.GeneralSibling: buffer += " ~ "; break;
+                        case CSSSelectorPreSelectorRelationship.ImmidiateChild: buffer += " > "; break;
+                        case CSSSelectorPreSelectorRelationship.AdjacentSibling: buffer += " + "; break;
+                    }
+                }
+
+                buffer += types[c].ToString();
+            }
+
+
+            return buffer;
+        }
     }
 }

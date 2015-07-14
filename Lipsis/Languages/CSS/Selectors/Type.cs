@@ -31,18 +31,24 @@ namespace Lipsis.Languages.CSS {
 
         public string Query { get { return p_Query; } }
 
+        public bool HasClass(CSSSelectorPseudoClass compare) {
+            return (p_PseudoClass & compare) == compare;
+        }
+        public bool HasElement(CSSSelectorPseudoElement compare) {
+            return (p_PseudoElement & compare) == compare;
+        }
+
         public CSSSelectorPseudoClass PseudoClass { get { return p_PseudoClass; } }
         public CSSSelectorPseudoElement PseudoElement { get { return p_PseudoElement; } }
+
+        public CSSSelectorPreSelectorRelationship PreSelectorRelationship { get { return p_ParentRelationship; } }
 
         public CSSSelectorElementTargetType TargetType { get { return p_Type; } }
         public bool IsAll { get { return p_Type == CSSSelectorElementTargetType.All; } }
         public bool IsTagType { get { return p_Type == CSSSelectorElementTargetType.Tag; } }
         public bool IsClassType { get { return p_Type == CSSSelectorElementTargetType.Class; } }
         public bool IsIDType { get { return p_Type == CSSSelectorElementTargetType.ID; } }
-
-
-        
-        
+       
         public override string ToString() {
             string buffer = "";
             switch (p_Type) {

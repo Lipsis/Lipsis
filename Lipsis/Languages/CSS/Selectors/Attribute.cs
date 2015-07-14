@@ -58,9 +58,9 @@ namespace Lipsis.Languages.CSS {
 
             return
                 "[" +
-                p_Name + " " +
+                p_Name +
                 compareStr +
-                " \"" + p_ValuePublic + "\"]";
+                "\"" + p_ValuePublic + "\"]";
         }
     }
 }

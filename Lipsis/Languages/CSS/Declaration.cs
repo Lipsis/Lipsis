@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Lipsis.Core;
+
 namespace Lipsis.Languages.CSS {
     public sealed class CSSDeclaration {
         private LinkedList<CSSSelector> p_Selectors;
@@ -39,5 +41,10 @@ namespace Lipsis.Languages.CSS {
 
         public LinkedList<CSSSelector> Selectors { get { return p_Selectors; } }
         public CSSRuleSet RuleSet { get { return p_Ruleset; } }
+
+        public override string ToString() {
+            CSSSelector[] selectors = Helpers.LinkedListToArray(p_Selectors);
+            return Helpers.FlattenToString(selectors, ", ");
+        }
     }
 }

@@ -162,7 +162,7 @@ namespace Lipsis.Languages.CSS {
                     #endregion
 
                     //skip to the rule seperate (;)
-                    while (data < dataEnd && *data != ';') { data++; }
+                    while (data < dataEnd && *data != ';' && *data != '}') { data++; }
 
                     //create the rule
                     buffer.AddRule(

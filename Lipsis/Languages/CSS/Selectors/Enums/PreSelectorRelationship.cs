@@ -6,5 +6,7 @@
         GeneralSibling = 2,         //a~b
         ImmidiateChild = 3,         //a>b
         AdjacentSibling = 4,        //a+b
+
+        NamespaceChild = 5,         //a|b
     }
 }

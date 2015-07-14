@@ -51,7 +51,7 @@
     <Compile Include="Languages\CSS\Selectors\Attribute.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\AttributeCompareType.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\ElementTargetType.cs" />
-    <Compile Include="Languages\CSS\Selectors\Enums\ParentRelationship.cs" />
+    <Compile Include="Languages\CSS\Selectors\Enums\PreSelectorRelationship.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\PseudoClass.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\PseudoElement.cs" />
     <Compile Include="Languages\CSS\Selectors\Selector.cs" />

@@ -11,28 +11,15 @@ namespace Lipsis.Tests {
         public static unsafe void Main(string[] args) {
 
             CSSSheet sheet = CSSSheet.Parse(File.ReadAllText("css.txt"));
-
+            
             while (true)
             {
                 int time = Environment.TickCount;
                 HTMLDocument doc = HTMLDocument.FromFile("test.txt");
 
-
-                foreach (MarkupElement e in doc.Find("style")) {
-                    if (e["src"] != null) { continue; }
-
-                    CSSSheet s = CSSSheet.Parse((e as MarkupTextElement).Text);
-
-                    continue;
-                }
-
-
+                
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
-                var lol = doc.GetElementByTagName("form");
-
-                CSSSelector selector = CSSSelector.Parse(File.ReadAllText("css.txt"));
-                
                 string build = "";
                 write(doc.Root as Node, 0, ref build);
                 File.WriteAllText("./tree.txt", build);
