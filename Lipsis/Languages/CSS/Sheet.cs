@@ -68,6 +68,9 @@ namespace Lipsis.Languages.CSS {
                     //define the list which will contains all the sub-values (split ' ')
                     LinkedList<STRPTR> components = new LinkedList<STRPTR>();
 
+                    //if the definition has a scope, this is where it's rules will be stored
+                    CSSRuleSet scope = null;
+
                     //skip to beginning of the data
                     if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
 
@@ -75,7 +78,14 @@ namespace Lipsis.Languages.CSS {
                     byte* strPtr = data;
                     byte* strPtrEnd = (byte*)0;
                     while (data < dataEnd) {
-                        
+                        //scope for rules?
+                        if (*data == '{') {
+                            data++;
+                            scope = CSSRuleSet.Parse(ref data, dataEnd);
+                            if (*data == '}') { data++; continue; }
+                            continue;
+                        }
+
                         //string?
                         if (*data == '"' || *data == '\'') { 
                             //read the string
@@ -122,6 +132,13 @@ namespace Lipsis.Languages.CSS {
 
                     }
                     #endregion
+
+
+                    int i = 0;
+                    string[] buffer = new string[components.Count];
+                    foreach (STRPTR p in components) {
+                        buffer[i++] = Helpers.ReadString(p.PTR, p.ENDPRR);
+                    }
 
                     continue;
                 }

@@ -141,7 +141,7 @@ namespace Lipsis.Languages.CSS {
                     byte* valueStart = data;
                     byte* valueEnd = dataEnd - 1;
                     while (data < dataEnd) {
-                        if (*data == ';') { valueEnd = data - 1; break; }
+                        if (*data == ';' || *data == '}') { valueEnd = data - 1; break; }
                         
                         //string open?
                         if (*data == '"' || *data == '\'') { 
@@ -168,6 +168,9 @@ namespace Lipsis.Languages.CSS {
                     buffer.AddRule(
                         Helpers.ReadString(nameStart, nameEnd),
                         Helpers.ReadString(valueStart, valueEnd));
+
+                    //hit the end of this ruleset?
+                    if (*data == '}') { break; }
                 }
 
                 //skip to the next character
