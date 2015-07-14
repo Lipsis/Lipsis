@@ -6,30 +6,11 @@ using System.Runtime.InteropServices;
 using Lipsis.Core;
 
 namespace Lipsis.Languages.CSS {
-    public unsafe class CSSSheet {
+    public unsafe sealed class CSSSheet : CSSDeclarationCollection {
         private static STRPTR STR_NAMESPACE;
 
         static CSSSheet() {
             STR_NAMESPACE = allocString("namespace");
-        }
-
-        private LinkedList<CSSDeclaration> p_Declarations;
-        public CSSSheet() {
-            p_Declarations = new LinkedList<CSSDeclaration>();
-        }
-        public CSSSheet(LinkedList<CSSDeclaration> declarations) {
-            p_Declarations = declarations;
-        }
-
-        public void AddDeclaration(LinkedList<CSSSelector> selectors, CSSRuleSet rules) {
-            AddDeclaration(new CSSDeclaration(selectors, rules));
-        }
-        public void AddDeclaration(CSSDeclaration declaration) {
-            p_Declarations.AddLast(declaration);
-        }
-
-        public bool RemoveDeclaration(CSSDeclaration declaration) {
-            return p_Declarations.Remove(declaration);
         }
 
         public static CSSSheet Parse(string data) {
@@ -61,32 +42,105 @@ namespace Lipsis.Languages.CSS {
                 //skip to the beginning of data
                 Helpers.SkipWhitespaces(ref data, dataEnd);
 
-                #region line starting with "@"?
+                #region at-rule?
                 if (*data == '@') {
                     data++;
 
-                    //define the list which will contains all the sub-values (split ' ')
-                    LinkedList<STRPTR> components = new LinkedList<STRPTR>();
+                    //define the list which will contains all the arguments
+                    LinkedList<STRPTR> arguments = new LinkedList<STRPTR>();
 
-                    //if the definition has a scope, this is where it's rules will be stored
-                    CSSRuleSet scope = null;
+                    //if the definition has a scope, this is where it's declarations will be stored
+                    ICSSScope scope = null;
 
                     //skip to beginning of the data
                     if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
 
-                    #region read components
+                    #region read the name
+                    byte* namePtr = data;
+                    byte* nameEndPtr = (byte*)0;
+                    while (data < dataEnd) {
+                        if (!(
+                            (*data >= 'A' && *data <= 'Z') ||
+                            (*data >= 'a' && *data <= 'z') ||
+                            *data == '-')) {
+                                nameEndPtr = data - 1;
+                                Helpers.SkipWhitespaces(ref data, dataEnd);
+                                break;
+                        }
+                        data++;
+                    }
+                    #endregion
+
+                    #region read arguments
                     byte* strPtr = data;
                     byte* strPtrEnd = (byte*)0;
                     while (data < dataEnd) {
-                        //scope for rules?
-                        if (*data == '{') {
-                            data++;
-                            scope = CSSRuleSet.Parse(ref data, dataEnd);
-                            if (*data == '}') { data++; continue; }
-                            continue;
+                        #region skip comments
+                        //block comment? (/**/)
+                        if (*data == '/' && data < dataEnd - 2 && *(data + 1) == '*') {
+                            //skip to the end of the block comment
+                            while (data < dataEnd - 2) {
+                                if (*data == '*' && *(data + 1) == '/') { data += 2; break; }
+                                data++;
+                            }
                         }
+                        #endregion
 
-                        //string?
+                        #region scope for declarations?
+                        if (*data == '{') {
+                            //add whatever was before the scope beginning 
+                            strPtrEnd = data - 1;
+                            if (!isBlank(strPtr, strPtrEnd)) {
+                                arguments.AddLast(new STRPTR(strPtr, strPtrEnd));
+                            }
+                            data++;
+
+                            //deturmine whethere we process the scope as a ruleset 
+                            //or a declaration by sampling the upcoming data
+                            //and seeing if we hit a tell-tail sign of a ruleset
+                            //or a declaration
+                            bool isRuleset = false;
+                            byte* dataSamplePtr = data;
+                            while (dataSamplePtr < dataEnd) {
+                                if (*dataSamplePtr == ':') { isRuleset = true; break; }
+                                if (*dataSamplePtr == '{') { break; }
+                                dataSamplePtr++;
+                            }
+
+                            #region ruleset?
+                            if (isRuleset) {
+                                scope = CSSRuleSet.Parse(ref data, dataEnd);
+                                if (*data == '}') { data++; }
+                            }
+                            #endregion
+
+                            #region declarations?
+                            else {
+                                //create the scope declarations
+                                CSSDeclarationCollection dScope = new CSSDeclarationCollection();
+                                scope = dScope;
+
+                                //scan declarations we hit the end of the scope
+                                while (data < dataEnd) {
+                                    CSSDeclaration d = CSSDeclaration.Parse(ref data, dataEnd);
+                                    if (d == null) { break; }
+                                    dScope.AddDeclaration(d);
+                                    if (*data == '}') { data++; }
+
+                                    if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
+                                    if (*data == '}') { data++; break; }
+
+                                    continue;
+                                }
+
+                                break;
+                            }
+                            #endregion
+                            break;
+                        }
+                        #endregion
+                        
+                        #region string?
                         if (*data == '"' || *data == '\'') { 
                             //read the string
                             byte strTerminate = *data++;
@@ -100,72 +154,63 @@ namespace Lipsis.Languages.CSS {
                                 data++;
                             }
                         }
-                        
-                        //space/end of line
-                        if (*data == ' ' || *data == ';' || *data == '\n') {
+                        #endregion
+
+                        #region space/end of line
+                        if (*data == ' ' || *data == ';') {
                             strPtrEnd = data - 1;
 
                             if (!isBlank(strPtr, strPtrEnd)) {
-                                components.AddLast(new STRPTR(strPtr, strPtrEnd));
+                                arguments.AddLast(new STRPTR(strPtr, strPtrEnd));
                             }
                             
                             //end of line?
-                            if (*data == ';' || *data == '\n') { data++; break; }
+                            if (*data == ';') { data++; break; }
+                            data++;
 
                             //skip the beginning of the next component
                             if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
                             strPtr = data;
                             strPtrEnd = (byte*)0;
+                            continue;
                         }
+                        #endregion
 
                         data++;
                     }
                     #endregion
-                                
-                    //any components found?
-                    if (components.Count == 0) { continue; }
 
-                    #region namespace?
-                    if (compareStr(components.First.Value, STR_NAMESPACE, false)) {
-
-
-
-                    }
-                    #endregion
-
-
-                    int i = 0;
-                    string[] buffer = new string[components.Count];
-                    foreach (STRPTR p in components) {
-                        buffer[i++] = Helpers.ReadString(p.PTR, p.ENDPRR);
-                    }
-
+                    handleAtRule(
+                        sheet,
+                        new STRPTR(namePtr, nameEndPtr),
+                        arguments,
+                        scope);
                     continue;
                 }
                 #endregion
 
-                //read selectors
-                LinkedList<CSSSelector> selectors = new LinkedList<CSSSelector>();
-                while (data < dataEnd) {
-                    CSSSelector selector = CSSSelector.Parse(ref data, dataEnd);
-                    selectors.AddLast(selector);
-                    if (*data != ',') { break; }
-                    data++;
-                }
+                //read the declaration
+                CSSDeclaration declaration = CSSDeclaration.Parse(ref data, dataEnd);
+                if (declaration == null) { break; }
 
-                //read the css rules
-                if (*data != '{') { break; }
-                data++;
-                CSSRuleSet set = CSSRuleSet.Parse(ref data, dataEnd);
+                //add the declaration
+                sheet.AddDeclaration(declaration);
 
                 //at the end?
                 if (*data == '}') { data++; }
-                
-                //add it
-                sheet.AddDeclaration(selectors, set);
             }
             
             return sheet;
+        }
+
+
+        private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope) {
+            string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR);
+
+            if (!(scope is CSSDeclarationCollection)) { return; }
+            sheet.AddDeclarations((scope as CSSDeclarationCollection));
+
+            return;
         }
 
         private static bool compareStr(STRPTR str1, STRPTR str2, bool matchCase) {

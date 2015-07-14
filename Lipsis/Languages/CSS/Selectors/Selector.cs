@@ -254,7 +254,7 @@ namespace Lipsis.Languages.CSS {
         }
         private static bool isNameChar(byte b) {
             return
-                (b == '-' || b == '_') ||
+                (b == '-' || b == '_' || b == '%') ||
                 (b >= 'A' && b <= 'Z') ||
                 (b >= 'a' && b <= 'z') ||
                 (b >= '0' && b <= '9');

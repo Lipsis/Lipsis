@@ -9,19 +9,18 @@ using Lipsis.Languages.CSS;
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {
-
-            CSSSheet sheet = CSSSheet.Parse(File.ReadAllText("css.txt"));
             
             while (true)
             {
                 int time = Environment.TickCount;
                 HTMLDocument doc = HTMLDocument.FromFile("test.txt");
-
+                CSSSheet sheet = CSSSheet.Parse(File.ReadAllText("css.txt"));
+            
                 
                 Console.WriteLine((Environment.TickCount - time) + "ms");
 
                 string build = "";
-                write(doc.Root as Node, 0, ref build);
+                //write(doc.Root as Node, 0, ref build);
                 File.WriteAllText("./tree.txt", build);
 
             }

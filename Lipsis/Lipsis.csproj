@@ -46,6 +46,8 @@
     <Compile Include="Core\Helpers\Data.cs" />
     <Compile Include="Core\Helpers\String.cs" />
     <Compile Include="Languages\CSS\Declaration.cs" />
+    <Compile Include="Languages\CSS\DeclarationCollection.cs" />
+    <Compile Include="Languages\CSS\Interfaces\ICSSScope.cs" />
     <Compile Include="Languages\CSS\Rules\Rule.cs" />
     <Compile Include="Languages\CSS\Rules\RuleSet.cs" />
     <Compile Include="Languages\CSS\Selectors\Attribute.cs" />

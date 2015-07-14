@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Lipsis.Core;
 
 namespace Lipsis.Languages.CSS {
-    public unsafe class CSSRuleSet {
+    public unsafe class CSSRuleSet : ICSSScope {
         private LinkedList<CSSRule> p_Rules;
 
         public CSSRuleSet() {
