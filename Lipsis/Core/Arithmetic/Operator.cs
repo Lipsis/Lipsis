@@ -10,8 +10,6 @@ namespace Lipsis.Core {
         Divide = 4,
 
         Modulus = 5,
-        Power = 6,
-
-        Negate = 7
+        Power = 6
     }
 }

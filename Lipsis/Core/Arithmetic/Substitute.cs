@@ -17,5 +17,9 @@ namespace Lipsis.Core {
 
         public char Name { get { return p_Name; } }
         public ArithmeticOperand Operand { get { return p_Operand; } }
+
+        public override string ToString() {
+            return p_Name + " = " + p_Operand.Value.ToString();
+        }
     }
 }

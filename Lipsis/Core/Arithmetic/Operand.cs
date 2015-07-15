@@ -5,8 +5,8 @@ namespace Lipsis.Core {
         private object p_Value;
         private bool p_IsInteger, p_IsDecimal, p_IsScope, p_IsNegative;
 
-        internal ArithmeticOperand(object value) : this(value, false) { }
-        internal ArithmeticOperand(object value, bool isNegative) {
+        public ArithmeticOperand(object value) : this(value, false) { }
+        public ArithmeticOperand(object value, bool isNegative) {
             p_Value = value;
             p_IsInteger = false;
             p_IsDecimal = false;
@@ -21,6 +21,11 @@ namespace Lipsis.Core {
             p_IsDecimal = (value is float || value is double);
             if (!p_IsDecimal) {
                 p_IsInteger = !(value is char);
+
+                //invalid?
+                if (!p_IsInteger) {
+                    throw new Exception("Value is not a valid type for an operand");
+                }
             }
         }
 

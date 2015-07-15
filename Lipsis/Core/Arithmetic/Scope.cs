@@ -3,17 +3,29 @@ using System.Text;
 using System.Collections.Generic;
 
 namespace Lipsis.Core {
-    public unsafe struct ArithmeticScope {
+    public unsafe class ArithmeticScope {
         private LinkedList<ArithmeticOperator> p_Operators;
         private LinkedList<ArithmeticOperand> p_Operands;
 
-        public ArithmeticScope(
-            LinkedList<ArithmeticOperator> operators,
-            LinkedList<ArithmeticOperand> operands) {
-                p_Operators = operators;
-                p_Operands = operands;
+        public ArithmeticScope() {
+            p_Operators = new LinkedList<ArithmeticOperator>();
+            p_Operands = new LinkedList<ArithmeticOperand>();
+
+            //add 0 to the operand so future AddOperation calls
+            //will just work from a base value of 0
+            p_Operands.AddLast(0);
+        }
+        private ArithmeticScope(LinkedList<ArithmeticOperator> operators, LinkedList<ArithmeticOperand> operands) {
+            p_Operators = operators;
+            p_Operands = operands;
         }
 
+        public void AddOperation(ArithmeticOperator op, ArithmeticOperand operand) {
+            p_Operators.AddLast(op);
+            p_Operands.AddLast(operand);
+        }
+
+        #region Calculate function
         public static double Calculate(string data) {
             return Calculate(data, new LinkedList<ArithmeticSubstitute>());
         }
@@ -88,8 +100,9 @@ namespace Lipsis.Core {
 
             return buffer;
         }
+        #endregion
 
-
+        #region Parse
         public static ArithmeticScope Parse(string data) {
             return Parse(Encoding.ASCII.GetBytes(data));
         }
@@ -206,6 +219,7 @@ namespace Lipsis.Core {
 
             return new ArithmeticScope(operators, operands);
         }
+        #endregion
 
         public override string ToString() {
             LinkedListNode<ArithmeticOperator> currentOperator = p_Operators.First;

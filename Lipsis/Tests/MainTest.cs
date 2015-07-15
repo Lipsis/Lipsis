@@ -9,7 +9,6 @@ using Lipsis.Languages.CSS;
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {
-
             while (true) {
                 LinkedList<ArithmeticSubstitute> subs = new LinkedList<ArithmeticSubstitute>();
                 subs.AddLast(new ArithmeticSubstitute(5, 'n'));
