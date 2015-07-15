@@ -1,8 +1,0 @@
-
-
-
-@namespace lol     url("dehdejdede");
-
-.sheet { 
-	-webkit-lol: #dedede;
-}
