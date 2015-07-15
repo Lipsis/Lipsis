@@ -23,7 +23,7 @@ namespace Lipsis.Core {
                 p_IsInteger = !(value is char);
 
                 //invalid?
-                if (!p_IsInteger) {
+                if (!p_IsInteger && !(value is char)) {
                     throw new Exception("Value is not a valid type for an operand");
                 }
             }

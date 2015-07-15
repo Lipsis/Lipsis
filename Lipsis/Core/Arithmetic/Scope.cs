@@ -284,6 +284,7 @@ namespace Lipsis.Core {
                 //add to the buffer
                 buffer += (opChar == '\0' ? "" : opChar.ToString()) + opAndString;
                 currentOperator = currentOperator.Next;
+                currentOperand = currentOperand.Next;
             }
 
             return buffer;

@@ -41,11 +41,11 @@
   </Target>
   -->
   <ItemGroup>
-    <Compile Include="Core\Arithmatic\Operand.cs" />
-    <Compile Include="Core\Arithmatic\Scope.cs" />
-    <Compile Include="Core\Arithmatic\Substitute.cs" />
+    <Compile Include="Core\Arithmetic\Operand.cs" />
+    <Compile Include="Core\Arithmetic\Scope.cs" />
+    <Compile Include="Core\Arithmetic\Substitute.cs" />
     <Compile Include="Core\BaseObjects\Node.cs" />
-    <Compile Include="Core\Arithmatic\Operator.cs" />
+    <Compile Include="Core\Arithmetic\Operator.cs" />
     <Compile Include="Core\Helpers\Array.cs" />
     <Compile Include="Core\Helpers\Data.cs" />
     <Compile Include="Core\Helpers\String.cs" />
