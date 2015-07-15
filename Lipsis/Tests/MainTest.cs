@@ -9,11 +9,27 @@ using Lipsis.Languages.CSS;
 namespace Lipsis.Tests {
     public static class MainTest {
         public static unsafe void Main(string[] args) {
-            
+
+            while (true) {
+                LinkedList<ArithmeticSubstitute> subs = new LinkedList<ArithmeticSubstitute>();
+                subs.AddLast(new ArithmeticSubstitute(5, 'n'));
+                subs.AddLast(new ArithmeticSubstitute(2, 'x'));
+
+                Console.Write("In < ");
+                string calc = Console.ReadLine();
+
+
+                ArithmeticScope s = ArithmeticScope.Parse(calc);
+                Console.WriteLine("'" + s.ToString() + "'");
+
+                Console.WriteLine(calc + "=" + ArithmeticScope.Calculate(calc, subs));
+
+            }
+
             while (true)
             {
                 int time = Environment.TickCount;
-                HTMLDocument doc = HTMLDocument.FromFile("test.txt");
+                //HTMLDocument doc = HTMLDocument.FromFile("test.txt");
                 CSSSheet sheet = CSSSheet.Parse(File.ReadAllText("css.txt"));
             
                 

@@ -1,19 +1,29 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using Lipsis.Core;
 
 namespace Lipsis.Languages.CSS {
     public unsafe class CSSRuleSet : ICSSScope {
+        private static byte* IMPORTANT_STRING;
+        private const int IMPORTANT_STRING_LENGTH = 9;
+        static CSSRuleSet() {
+            IMPORTANT_STRING = (byte*)Marshal.StringToCoTaskMemAnsi("important").ToPointer();
+        }
+        
         private LinkedList<CSSRule> p_Rules;
 
         public CSSRuleSet() {
             p_Rules = new LinkedList<CSSRule>();
         }
-        
+
         public CSSRule AddRule(string name, string value) {
-            CSSRule buffer = new CSSRule(name, value);
+            return AddRule(name, value, false);
+        }
+        public CSSRule AddRule(string name, string value, bool important) {
+            CSSRule buffer = new CSSRule(name, value, important);
             p_Rules.AddLast(buffer);
             return buffer;
         }
@@ -140,9 +150,34 @@ namespace Lipsis.Languages.CSS {
                     #region read the value
                     byte* valueStart = data;
                     byte* valueEnd = dataEnd - 1;
+                    bool important = false;
                     while (data < dataEnd) {
                         if (*data == ';' || *data == '}') { valueEnd = data - 1; break; }
-                        
+
+                        #region !important?
+                        if (*data == '!' && data < dataEnd - IMPORTANT_STRING_LENGTH) {
+                            //read and compare the upcoming data with the "important" string
+                            byte* dataCopy = data + 1;
+                            byte* dataCopyEnd = data + IMPORTANT_STRING_LENGTH;
+                            byte* impCopy = IMPORTANT_STRING;
+                            bool match = true;
+                            while (dataCopy < dataCopyEnd) {
+                                if (toLower(*dataCopy++) != *impCopy++) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+
+                            //match? if so, we do not have the !important inside the value
+                            //so we finish reading the value here.
+                            if (match) {
+                                important = true;
+                                valueEnd = data - 1;
+                                break;
+                            }
+                        }
+                        #endregion
+
                         //string open?
                         if (*data == '"' || *data == '\'') { 
                             //skip over it
@@ -157,6 +192,7 @@ namespace Lipsis.Languages.CSS {
                         data++;
                     }
 
+
                     //trim the value (remove the whitespaces at the end of the value)
                     while (!isNameValueCharacter(*valueEnd)) { valueEnd--; }
                     #endregion
@@ -167,7 +203,8 @@ namespace Lipsis.Languages.CSS {
                     //create the rule
                     buffer.AddRule(
                         Helpers.ReadString(nameStart, nameEnd),
-                        Helpers.ReadString(valueStart, valueEnd));
+                        Helpers.ReadString(valueStart, valueEnd),
+                        important);
 
                     //hit the end of this ruleset?
                     if (*data == '}') { break; }
@@ -190,6 +227,12 @@ namespace Lipsis.Languages.CSS {
                     b != '{' &&
                     b != '}');
 
+        }
+        private static byte toLower(byte b) {
+            if (b >= 'A' && b <= 'Z') {
+                return (byte)((b - 'A') + 'a');
+            }
+            return b;
         }
 
         public override string ToString() {

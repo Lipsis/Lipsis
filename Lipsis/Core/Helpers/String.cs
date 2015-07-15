@@ -42,7 +42,6 @@ namespace Lipsis.Core {
             }
             return true;
         }
-        
 
         public static string FlattenToString<T>(T[] array, string seperator) {
             //create the string to return and buffer the length of the array
