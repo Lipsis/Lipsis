@@ -82,17 +82,16 @@ namespace Lipsis.Core {
             if (p_BIDMASSorted || p_Operators.Count == 0) { return; }
             
             //process each operator in order of BIDMAS
-            int queueCount = QueueCount;
-            processBIDMAS(ArithmeticOperator.Power, queueCount);
-            processBIDMAS(ArithmeticOperator.Divide, queueCount);
-            processBIDMAS(ArithmeticOperator.Modulus, queueCount);
-            processBIDMAS(ArithmeticOperator.Multiply, queueCount);
-            processBIDMAS(ArithmeticOperator.Addition, queueCount);
-            processBIDMAS(ArithmeticOperator.Subtract, queueCount);
+            processBIDMAS(ArithmeticOperator.Power);
+            processBIDMAS(ArithmeticOperator.Divide);
+            processBIDMAS(ArithmeticOperator.Modulus);
+            processBIDMAS(ArithmeticOperator.Multiply);
+            processBIDMAS(ArithmeticOperator.Addition);
+            processBIDMAS(ArithmeticOperator.Subtract);
 
             p_BIDMASSorted = true;
         }
-        private void processBIDMAS(ArithmeticOperator op, int queueCount) { 
+        private void processBIDMAS(ArithmeticOperator op) { 
 
             //iterate through the operators
             LinkedListNode<ArithmeticOperator> currentOperator = p_Operators.First;
@@ -281,35 +280,61 @@ namespace Lipsis.Core {
 
         #region Parse
         public static ArithmeticQueue Parse(string data) {
-            return Parse(data, true);
+            return Parse(data, new LinkedList<ArithmeticFunction>());
         }
         public static ArithmeticQueue Parse(byte[] data) {
-            return Parse(data, true);
+            return Parse(data, new LinkedList<ArithmeticFunction>());
         }
         public static ArithmeticQueue Parse(ref byte* data, int length) {
-            return Parse(ref data, length, true);
+            return Parse(ref data, length, new LinkedList<ArithmeticFunction>());
         }
         public static ArithmeticQueue Parse(ref byte* data, byte* dataEnd) {
-            return Parse(ref data, dataEnd, true);
+            return Parse(ref data, dataEnd, new LinkedList<ArithmeticFunction>());
+        }
+
+        public static ArithmeticQueue Parse(string data, LinkedList<ArithmeticFunction> functions) {
+            return Parse(data, true, functions);
+        }
+        public static ArithmeticQueue Parse(byte[] data, LinkedList<ArithmeticFunction> functions) {
+            return Parse(data, true, functions);
+        }
+        public static ArithmeticQueue Parse(ref byte* data, int length, LinkedList<ArithmeticFunction> functions) {
+            return Parse(ref data, length, true, functions);
+        }
+        public static ArithmeticQueue Parse(ref byte* data, byte* dataEnd, LinkedList<ArithmeticFunction> functions) {
+            return Parse(ref data, dataEnd, true, functions);
         }
 
         public static ArithmeticQueue Parse(string data, bool useBIDMAS) {
-            return Parse(Encoding.ASCII.GetBytes(data), useBIDMAS);
+            return Parse(data, useBIDMAS, new LinkedList<ArithmeticFunction>());
         }
         public static ArithmeticQueue Parse(byte[] data, bool useBIDMAS) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Parse(ref ptr, fixedPtr + data.Length, useBIDMAS);
-            }
+            return Parse(data, useBIDMAS, new LinkedList<ArithmeticFunction>());
         }
         public static ArithmeticQueue Parse(ref byte* data, int length, bool useBIDMAS) {
-            return Parse(ref data, data + length, useBIDMAS);
+            return Parse(ref data, length, useBIDMAS, new LinkedList<ArithmeticFunction>());
         }
         public static ArithmeticQueue Parse(ref byte* data, byte* dataEnd, bool useBIDMAS) {
+            return Parse(ref data, dataEnd, useBIDMAS, new LinkedList<ArithmeticFunction>());
+        }
+
+        public static ArithmeticQueue Parse(string data, bool useBIDMAS, LinkedList<ArithmeticFunction> functions) {
+            return Parse(Encoding.ASCII.GetBytes(data), useBIDMAS, functions);
+        }
+        public static ArithmeticQueue Parse(byte[] data, bool useBIDMAS, LinkedList<ArithmeticFunction> functions) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Parse(ref ptr, fixedPtr + data.Length, useBIDMAS, functions);
+            }
+        }
+        public static ArithmeticQueue Parse(ref byte* data, int length, bool useBIDMAS, LinkedList<ArithmeticFunction> functions) {
+            return Parse(ref data, data + length, useBIDMAS, functions);
+        }
+        public static ArithmeticQueue Parse(ref byte* data, byte* dataEnd, bool useBIDMAS, LinkedList<ArithmeticFunction> functions) {
             //define the list of scopes, operators and operands
             LinkedList<ArithmeticOperator> operators = new LinkedList<ArithmeticOperator>();
             LinkedList<ArithmeticOperand> operands = new LinkedList<ArithmeticOperand>();
-            
+        
             //define the size of the numerical object the queue will return when
             //the calculate function is called (default of 1 (byte))
             sbyte resultSize = 1;
@@ -347,9 +372,83 @@ namespace Lipsis.Core {
                 }
                 #endregion
 
-                #region scope?
+                #region function?
+                if (isAlphabetic(*data)) {         
+                    //read until an open queue
+                    byte* functionNameStart = data;
+                    byte* functionNameEnd = (byte*)0;
+                    byte* dataCopy = data;
+                    bool foundScope = false;
+                    while (dataCopy < dataEnd) {
+                        //scope?
+                        if (*dataCopy == '(') {
+                            foundScope = true;
+                            functionNameEnd = dataCopy - 1;
+                            dataCopy++;
+                            break;
+                        }
+
+                        //not a whitespace?
+                        if (*dataCopy != ' ' &&
+                            *dataCopy != '\n' &&
+                            *dataCopy != '\r' &&
+                            *dataCopy != '\t' &&
+                            !isAlphabetic(*dataCopy)) {
+                            break;
+                        }
+                        dataCopy++;
+                    }
+
+                    //did we find a scope?
+                    if (foundScope) {                         
+                        //trim the function name to remove whitespace
+                        while (functionNameEnd > data &&
+                               !isAlphabetic(*functionNameEnd)) { functionNameEnd--; }
+
+                        //name must be at least 2 characters wide
+                        if (functionNameStart != functionNameEnd) {                            
+                            //it's a function, lookup its name
+                            data = dataCopy;
+                            string functionName = Helpers.ReadString(functionNameStart, functionNameEnd);
+
+                            //find the function from the functions list
+                            IEnumerator<ArithmeticFunction> e = functions.GetEnumerator();
+                            ArithmeticFunction functionBase = null;
+                            while (e.MoveNext()) {
+                                ArithmeticFunction current = e.Current;
+                                if (current.Name == functionName) {
+                                    functionBase = current;
+                                    break;
+                                }
+                            }
+
+                            //found the function?
+                            if (functionBase == null) {
+                                throw new Exception("Function \"" + functionName + "\" does not exist!");
+                            }
+
+                            //was there an operand behind the substitute?
+                            //if not, (e.g 5(5)) we multiple the previous operand with the scope
+                            if (operands.Count != operators.Count) {
+                                operators.AddLast(ArithmeticOperator.Multiply);
+                            }
+
+                            //parse the function call arguments
+                            ArithmeticQueue args = ArithmeticQueue.Parse(ref data, dataEnd, useBIDMAS, functions);
+
+                            //add the function as an operand
+                            ArithmeticFunction function = functionBase.Create(args);
+                            operands.AddLast(new ArithmeticOperand(function, negativeFlag));
+                            negativeFlag = false;
+                            continue;
+                        }
+                    }
+                }                
+
+                #endregion
+
+                #region queue
                 if (*data == '(') {
-                    
                     //was there an operand behind the substitute?
                     //if not, (e.g 5(5)) we multiple the previous operand with the scope
                     if (operands.Count != operators.Count) {
@@ -416,8 +515,6 @@ namespace Lipsis.Core {
                     operands.AddLast(new ArithmeticOperand((char)*data, negativeFlag));
                     negativeFlag = false;
                     data++;
-
-
                 }
                 #endregion
             }
@@ -502,6 +599,12 @@ namespace Lipsis.Core {
             return buffer;
         }
 
+        private static bool isAlphabetic(byte b) {
+
+            return (b >= 'A' && b <= 'Z') ||
+                   (b >= 'a' && b <= 'z');
+
+        }
         private ArithmeticNumeric getOperandValue(ArithmeticOperand operand) {
             ArithmeticNumeric val = (ArithmeticNumeric)operand.Value;
             if (operand.IsNegative) { val = -val; }
@@ -538,6 +641,10 @@ namespace Lipsis.Core {
             }
             if (operand.IsQueue) { 
                 ArithmeticNumeric ret = ((ArithmeticQueue)operand.Value).Calculate(subs);
+                operand = new ArithmeticOperand(ret, operand.IsNegative);
+            }
+            if (operand.IsFunction) {
+                ArithmeticNumeric ret = ((ArithmeticFunction)operand.Value).Call(subs);
                 operand = new ArithmeticOperand(ret, operand.IsNegative);
             }
         }

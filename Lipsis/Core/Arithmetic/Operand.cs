@@ -3,7 +3,7 @@
 namespace Lipsis.Core {
     public struct ArithmeticOperand {
         private object p_Value;
-        private bool p_IsInteger, p_IsDecimal, p_IsQueue, p_IsNegative;
+        private bool p_IsInteger, p_IsDecimal, p_IsQueue, p_IsNegative, p_IsFunction;
 
         public ArithmeticOperand(object value) : this(value, false) { }
         public ArithmeticOperand(object value, bool isNegative) {
@@ -12,6 +12,13 @@ namespace Lipsis.Core {
             p_IsDecimal = false;
             p_IsQueue = false;
             p_IsNegative = isNegative;
+            p_IsFunction = false;
+
+            //function?
+            if (value is ArithmeticFunction) {
+                p_IsFunction = true;
+                return;
+            }
 
             //queue?
             if (value is ArithmeticQueue) {
@@ -35,9 +42,10 @@ namespace Lipsis.Core {
         public object Value { get { return p_Value; } }
         public bool IsInteger { get { return p_IsInteger; } }
         public bool IsDecimal { get { return p_IsDecimal; } }
-        public bool IsSubstitution { get { return !p_IsInteger && !p_IsDecimal && !p_IsQueue; } }
+        public bool IsSubstitution { get { return !p_IsInteger && !p_IsDecimal && !p_IsQueue && !p_IsFunction; } }
         public bool IsQueue { get { return p_IsQueue; } }
         public bool IsNumeric { get { return p_IsInteger || p_IsDecimal; } }
+        public bool IsFunction { get { return p_IsFunction; } }
         public bool IsNegative {
             get { return p_IsNegative; }
             set { p_IsNegative = value; }

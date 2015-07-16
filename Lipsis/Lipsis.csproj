@@ -41,6 +41,7 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="Core\Arithmetic\Function.cs" />
     <Compile Include="Core\Arithmetic\Operand.cs" />
     <Compile Include="Core\Arithmetic\Queue.cs" />
     <Compile Include="Core\Arithmetic\Numeric.cs" />

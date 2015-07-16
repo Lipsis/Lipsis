@@ -1842,7 +1842,7 @@ namespace Lipsis.Core {
             switch (sizeInBytes) {
                 case 1:
                     if (isDecimal) { return (float)0; }
-                    return (byte)0;
+                    return (sbyte)0;
                 case 2:
                     if (isDecimal) { return (float)0; }
                     return (short)0;
