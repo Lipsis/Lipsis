@@ -95,12 +95,6 @@ namespace Lipsis.Languages.CSS {
                             }
                             data++;
 
-                            string[] names = new string[arguments.Count];
-                            int i = 0;
-                            foreach (STRPTR p in arguments) {
-                                names[i++] = Helpers.ReadString(p.PTR, p.ENDPRR);
-                            }
-
                             //deturmine whether we process the scope as a ruleset 
                             //or a declaration by sampling the upcoming data
                             //and seeing if we hit a tell-tail sign of a ruleset
@@ -199,15 +193,6 @@ namespace Lipsis.Languages.CSS {
             return sheet;
         }
 
-        private static string sample(byte* data, int length) {
-            byte* endPtr = data + length;
-            string buffer = "";
-            while (data < endPtr) {
-                buffer += (char)*data++;
-            }
-            return buffer;
-        }
-        
 
         private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope) {
             string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR);
