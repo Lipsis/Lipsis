@@ -1771,6 +1771,9 @@ namespace Lipsis.Core {
             a.Subtract(b);
             return a;
         }
+        public static ArithmeticNumeric operator -(ArithmeticNumeric a) {
+            return 0 - a;
+        }
         public static ArithmeticNumeric operator *(ArithmeticNumeric a, ArithmeticNumeric b) {
             a.Multiply(b);
             return a;
@@ -1814,49 +1817,8 @@ namespace Lipsis.Core {
         public static implicit operator ArithmeticNumeric(ulong value) { return new ArithmeticNumeric(value); }
         public static implicit operator ArithmeticNumeric(double value) { return new ArithmeticNumeric(value); }
         public static implicit operator ArithmeticNumeric(float value) { return new ArithmeticNumeric(value); }
-        
-        public static implicit operator sbyte(ArithmeticNumeric value) {
-            if (value.p_Value is sbyte) { return (sbyte)value.p_Value; }
-            return Convert.ToSByte(value.p_Value);
-        }
-        public static implicit operator byte(ArithmeticNumeric value) {
-            if (value.p_Value is byte) { return (byte)value.p_Value; }
-            return Convert.ToByte(value.p_Value);
-        }
-        public static implicit operator short(ArithmeticNumeric value) {
-            if (value.p_Value is short) { return (short)value.p_Value; }
-            return Convert.ToInt16(value.p_Value);
-        }
-        public static implicit operator ushort(ArithmeticNumeric value) {
-            if (value.p_Value is ushort) { return (ushort)value.p_Value; }
-            return Convert.ToUInt16(value.p_Value);
-        }
-        public static implicit operator int(ArithmeticNumeric value) {
-            if (value.p_Value is short) { return (int)value.p_Value; }
-            return Convert.ToInt32(value.p_Value);
-        }
-        public static implicit operator uint(ArithmeticNumeric value) {
-            if (value.p_Value is uint) { return (uint)value.p_Value; }
-            return Convert.ToUInt32(value.p_Value);
-        }
-        public static implicit operator long(ArithmeticNumeric value) {
-            if (value.p_Value is long) { return (long)value.p_Value; }
-            return Convert.ToInt64(value.p_Value);
-        }
-        public static implicit operator ulong(ArithmeticNumeric value) {
-            if (value.p_Value is ulong) { return (ulong)value.p_Value; }
-            return Convert.ToUInt64(value.p_Value);
-        }
-        public static implicit operator float(ArithmeticNumeric value) {
-            if (value.p_Value is float) { return (float)value.p_Value; }
-            return Convert.ToSingle(value.p_Value);
-        }
-        public static implicit operator double(ArithmeticNumeric value) {
-            if (value.p_Value is double) { return (double)value.p_Value; }
-            return Convert.ToDouble(value.p_Value);
-        }
         #endregion
-
+        
         public static ArithmeticNumeric FromString(string str, bool isDecimal, byte length) {
             //get the amount of memory the number would need
             sbyte memSize = RequiredMemory(length, isDecimal);
@@ -1917,6 +1879,9 @@ namespace Lipsis.Core {
             else if (numOfCharacters < 10) { return 4; }
             return 8;
         }
+
+        private static ArithmeticNumeric p_Zero = 0;
+        public static ArithmeticNumeric Zero { get { return p_Zero; } }
 
         public override string ToString() {
             return p_Value.ToString();

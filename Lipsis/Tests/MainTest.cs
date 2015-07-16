@@ -18,15 +18,13 @@ namespace Lipsis.Tests {
             while (true) {
                 Console.Write("In < ");
                 string calc = Console.ReadLine();
-
+                Console.Clear();
                 ArithmeticQueue scope = ArithmeticQueue.Parse(calc);
                 
-                for (int c = 0; c < 10; c++)
-                {
+                for (int c = 0; c < 20; c++) {
                     n.Operand = c;
                     ArithmeticNumeric res = ArithmeticQueue.Calculate(calc, subs);
-                    Console.WriteLine("[" + n + "] " +scope + "=" + res);
-                    Console.WriteLine(res.Size + " bytes wide");
+                    Console.WriteLine("[" + n + "] " + scope + "=" + res);
                 }
                 
 

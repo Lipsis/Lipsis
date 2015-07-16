@@ -25,7 +25,7 @@ namespace Lipsis.Core {
             //valid call? (there must be operands already) otherwise this call would
             //make the arithmatic queue invalid.
             if (p_Operands.Count == 0) {
-                throw new Exception("Cannot add on to chain when their is no operands to chain off. Consider using AddOperation(op,opAnd1,opAnd2).");
+                throw new Exception("Cannot add on to chain when there is no operands to chain off. Consider using AddOperation(op,opAnd1,opAnd2).");
             }
 
             //operand larger than the result size? if so, set the result size to that of the operand
@@ -123,17 +123,18 @@ namespace Lipsis.Core {
             if (currentOperator == null) {
                 if (currentOperand != null) {
                     ArithmeticOperand opAnd = currentOperand.Value;
-                    processOperand(ref opAnd, substitutes);
+                    ArithmeticNumeric ret = ArithmeticNumeric.Zero;
+                    processOperand(ref opAnd, false, ref ret, substitutes);
                     return getOperandValue(opAnd);
                 }
                 return 0;
             }
 
             //define the return buffer (start as the first operand)
+            ArithmeticNumeric buffer = ArithmeticNumeric.CreateOfSize(p_ResultSize, p_HasDecimal);
             ArithmeticOperand firstOpAnd = currentOperand.Value;
             currentOperand = currentOperand.Next;
-            processOperand(ref firstOpAnd, substitutes);
-            ArithmeticNumeric buffer = ArithmeticNumeric.CreateOfSize(p_ResultSize, p_HasDecimal);
+            processOperand(ref firstOpAnd, true, ref buffer, substitutes);
             buffer += getOperandValue(firstOpAnd);
 
             //iterate through the operators
@@ -143,7 +144,7 @@ namespace Lipsis.Core {
                 ArithmeticOperand opAnd = currentOperand.Value;
 
                 //process the operand for scope/substitution
-                processOperand(ref opAnd, substitutes);
+                processOperand(ref opAnd, true, ref buffer, substitutes);
                 
                 //perform calculation
                 performCalc(ref buffer, op, opAnd);
@@ -360,9 +361,32 @@ namespace Lipsis.Core {
             if (operand.IsNegative) { val = -val; }
             return val;
         }
-        private void processOperand(ref ArithmeticOperand operand,LinkedList<ArithmeticSubstitute> subs) {
+        private void processOperand(ref ArithmeticOperand operand, bool canResize, ref ArithmeticNumeric buffer, LinkedList<ArithmeticSubstitute> subs) {
             if (operand.IsSubstitution) { 
                 ArithmeticOperand newOpAnd = processSubstitute(operand, subs);
+
+                //do we have to resize the buffer? to store the substitution?
+                if (canResize) {
+                    ArithmeticNumeric val = (ArithmeticNumeric)newOpAnd.Value;
+
+                    //decimal?
+                    if (!buffer.IsDecimal && newOpAnd.IsDecimal) {
+                        ArithmeticNumeric bufferCopy = buffer;
+                        
+                        buffer = ArithmeticNumeric.CreateOfSize(val.Size, true);
+                        buffer += bufferCopy;                        
+                    }
+
+                    //need more memory?
+                    else if (buffer.Size < val.Size) {
+                        ArithmeticNumeric bufferCopy = buffer;
+                        buffer = ArithmeticNumeric.CreateOfSize(val.Size, newOpAnd.IsDecimal);
+                        buffer += bufferCopy;
+                    }
+
+                }
+
+
                 if (operand.IsNegative) { newOpAnd.IsNegative = true; }
                 operand = newOpAnd;
                 return;
@@ -385,22 +409,29 @@ namespace Lipsis.Core {
             }
         }
         private ArithmeticOperand processSubstitute(ArithmeticOperand operand, LinkedList<ArithmeticSubstitute> sub) {
-            //get the name which we look for
             char name = (char)operand.Value;
+            ArithmeticSubstitute ret;
+            bool found = substituteExist(name, sub, out ret);
+            if (found) { return ret.Operand; }
+            throw new Exception("Substitute '" + name + "' was not found");
+        }
+        private bool substituteExist(char name, LinkedList<ArithmeticSubstitute> subs, out ArithmeticSubstitute found) {
+            found = default(ArithmeticSubstitute);
 
             //look for the name
-            IEnumerator<ArithmeticSubstitute> e = sub.GetEnumerator();
+            IEnumerator<ArithmeticSubstitute> e = subs.GetEnumerator();
             while (e.MoveNext()) {
                 ArithmeticSubstitute current = e.Current;
                 if (current.Name == name) {
                     e.Dispose();
-                    return current.Operand;
+                    found = current;
+                    return true;
                 }
             }
 
             //not found
             e.Dispose();
-            throw new Exception("Substitute '" + name + "' was not found");
+            return false;
         }
         private void performCalc(ref ArithmeticNumeric current, ArithmeticOperator op, ArithmeticOperand opAnd) {
             //get the operand as decimal
@@ -413,7 +444,11 @@ namespace Lipsis.Core {
                 case ArithmeticOperator.Multiply: current *= opAndDecimal; break;
                 case ArithmeticOperator.Divide: current /= opAndDecimal; break;
                 case ArithmeticOperator.Modulus: current %= opAndDecimal; break;
-                case ArithmeticOperator.Power: current = Math.Pow(current, opAndDecimal); break;
+                case ArithmeticOperator.Power:
+                    current = Math.Pow(
+                        Convert.ToDouble(current.RAWObject), 
+                        Convert.ToDouble(opAndDecimal.RAWObject)); 
+                    break;
             }
         }
     }
