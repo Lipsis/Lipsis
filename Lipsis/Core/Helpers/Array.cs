@@ -78,5 +78,13 @@ namespace Lipsis.Core {
             //not found
             throw new Exception("Index not found");
         }
+
+        public static void AddLinkedList<T>(LinkedList<T> list, LinkedList<T> addList) {
+            IEnumerator<T> e = addList.GetEnumerator();
+            while (e.MoveNext()) {
+                list.AddLast(e.Current);
+            }
+            e.Dispose();
+        }
     }
 }

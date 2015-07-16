@@ -7,7 +7,7 @@ namespace Lipsis.Core {
         private LinkedList<ArithmeticOperator> p_Operators;
         private LinkedList<ArithmeticOperand> p_Operands;
         private sbyte p_ResultSize;
-        private bool p_HasDecimal;
+        private bool p_HasDecimal, p_BIDMASSorted;
         
         public ArithmeticQueue() {
             p_Operators = new LinkedList<ArithmeticOperator>();
@@ -39,7 +39,10 @@ namespace Lipsis.Core {
             //add it
             p_Operators.AddLast(op);
             p_Operands.AddLast(operand);
+            p_BIDMASSorted = false;
 
+            //division
+            if (op == ArithmeticOperator.Divide) { HasDecimal = true; }
             return this;
         }
         public ArithmeticQueue AddOperation(ArithmeticOperator op, ArithmeticOperand opAnd1, ArithmeticOperand opAnd2) { 
@@ -67,8 +70,62 @@ namespace Lipsis.Core {
             p_Operators.AddLast(op);
             p_Operands.AddLast(opAnd1);
             p_Operands.AddLast(opAnd2);
+            p_BIDMASSorted = false;
 
+            //division?
+            if (op == ArithmeticOperator.Divide) { HasDecimal = true; }
             return this;
+        }
+
+        public void SortBIDMAS() {
+            //already sorted?/nothing to sort?
+            if (p_BIDMASSorted || p_Operators.Count == 0) { return; }
+            
+            //process each operator in order of BIDMAS
+            int queueCount = QueueCount;
+            processBIDMAS(ArithmeticOperator.Power, queueCount);
+            processBIDMAS(ArithmeticOperator.Divide, queueCount);
+            processBIDMAS(ArithmeticOperator.Modulus, queueCount);
+            processBIDMAS(ArithmeticOperator.Multiply, queueCount);
+            processBIDMAS(ArithmeticOperator.Addition, queueCount);
+            processBIDMAS(ArithmeticOperator.Subtract, queueCount);
+
+            p_BIDMASSorted = true;
+        }
+        private void processBIDMAS(ArithmeticOperator op, int queueCount) { 
+
+            //iterate through the operators
+            LinkedListNode<ArithmeticOperator> currentOperator = p_Operators.First;
+            LinkedListNode<ArithmeticOperand> currentOperand = p_Operands.First;
+            while (currentOperator != null) {
+                //operator we want to process?
+                ArithmeticOperator currentOp = currentOperator.Value;
+                if (op != currentOp) {
+                    currentOperator = currentOperator.Next;
+                    currentOperand = currentOperand.Next;
+                    continue;
+                }
+                
+                //get the 2 operands for the operator
+                ArithmeticOperand opAnd1 = currentOperand.Value;
+                ArithmeticOperand opAnd2 = currentOperand.Next.Value;
+
+                //group this operator into a scope
+                ArithmeticQueue queue = new ArithmeticQueue();
+                queue.AddOperation(currentOp, opAnd1, opAnd2);
+                
+                //replace the operand with the queue
+                currentOperand.Value = new ArithmeticOperand(queue);
+                                
+                //since we have processed the second operand and
+                //the operator, remove it
+                LinkedListNode<ArithmeticOperator> nextOp = currentOperator.Next;
+                p_Operands.Remove(currentOperand.Next);
+                p_Operators.Remove(currentOperator);
+                currentOperator = nextOp;
+            }
+            
+
         }
 
         public void Clear() {
@@ -79,34 +136,99 @@ namespace Lipsis.Core {
             p_HasDecimal = false;
         }
 
+        public sbyte ResultSize {
+            get { return p_ResultSize; }
+            set { p_ResultSize = value; }
+        }
+        public bool HasDecimal {
+            get { return p_HasDecimal; }
+            set { 
+                //value changed?
+                if (p_HasDecimal == value) { return; }
+
+                p_HasDecimal = value; 
+                
+                //set every queue operand to have decimal
+                IEnumerator<ArithmeticOperand> e = p_Operands.GetEnumerator();
+                while (e.MoveNext()) {
+                    ArithmeticOperand current = e.Current;
+                    if (!current.IsQueue) { continue; }
+                    ((ArithmeticQueue)current.Value).HasDecimal = value;
+                }
+                e.Dispose();
+            }
+        }
+
+        public int QueueCount {
+            get { 
+                //count how many queue operands we have
+                int buffer = 0;
+                IEnumerator<ArithmeticOperand> e = p_Operands.GetEnumerator();
+                while (e.MoveNext()) {
+                    if (e.Current.IsQueue) {
+                        buffer++;
+                    }
+                }
+                e.Dispose();
+                return buffer;
+            }
+        }
+
         #region Calculate function
+
         public static ArithmeticNumeric Calculate(string data) {
-            return Calculate(data, new LinkedList<ArithmeticSubstitute>());
+            return Calculate(data, true);
         }
         public static ArithmeticNumeric Calculate(byte[] data) {
-            return Calculate(data, new LinkedList<ArithmeticSubstitute>());
+            return Calculate(data, true);
         }
         public static ArithmeticNumeric Calculate(ref byte* data, int length) {
-            return Calculate(ref data, length, new LinkedList<ArithmeticSubstitute>());
+            return Calculate(ref data, data + length, true);
         }
         public static ArithmeticNumeric Calculate(ref byte* data, byte* dataEnd) {
-            return Calculate(ref data, dataEnd, new LinkedList<ArithmeticSubstitute>());
+            return Calculate(ref data, dataEnd, true);
+        }
+        
+        public static ArithmeticNumeric Calculate(string data, bool useBIDMAS) {
+            return Calculate(data, new LinkedList<ArithmeticSubstitute>(), useBIDMAS);
+        }
+        public static ArithmeticNumeric Calculate(byte[] data, bool useBIDMAS) {
+            return Calculate(data, new LinkedList<ArithmeticSubstitute>(), useBIDMAS);
+        }
+        public static ArithmeticNumeric Calculate(ref byte* data, int length, bool useBIDMAS) {
+            return Calculate(ref data, data + length, new LinkedList<ArithmeticSubstitute>(), useBIDMAS);
+        }
+        public static ArithmeticNumeric Calculate(ref byte* data, byte* dataEnd, bool useBIDMAS) {
+            return Calculate(ref data, dataEnd, new LinkedList<ArithmeticSubstitute>(), useBIDMAS);
         }
 
         public static ArithmeticNumeric Calculate(string data, LinkedList<ArithmeticSubstitute> substitutes) {
-            return Calculate(Encoding.ASCII.GetBytes(data), substitutes);
+            return Calculate(data, substitutes, true);
         }
         public static ArithmeticNumeric Calculate(byte[] data, LinkedList<ArithmeticSubstitute> substitutes) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Calculate(ref ptr, ptr + data.Length, substitutes);
-            }
+            return Calculate(data, substitutes, true);
         }
         public static ArithmeticNumeric Calculate(ref byte* data, int length, LinkedList<ArithmeticSubstitute> substitutes) {
-            return Calculate(ref data, data + length, substitutes);
+            return Calculate(ref data, data + length, substitutes, true);
         }
         public static ArithmeticNumeric Calculate(ref byte* data, byte* dataEnd, LinkedList<ArithmeticSubstitute> substitutes) {
-            ArithmeticQueue scope = ArithmeticQueue.Parse(ref data, dataEnd);
+            return Calculate(ref data, dataEnd, substitutes, true);
+        }
+
+        public static ArithmeticNumeric Calculate(string data, LinkedList<ArithmeticSubstitute> substitutes, bool useBIDMAS) {
+            return Calculate(Encoding.ASCII.GetBytes(data), substitutes, useBIDMAS);
+        }
+        public static ArithmeticNumeric Calculate(byte[] data, LinkedList<ArithmeticSubstitute> substitutes, bool useBIDMAS) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Calculate(ref ptr, ptr + data.Length, substitutes, useBIDMAS);
+            }
+        }
+        public static ArithmeticNumeric Calculate(ref byte* data, int length, LinkedList<ArithmeticSubstitute> substitutes, bool useBIDMAS) {
+            return Calculate(ref data, data + length, substitutes, useBIDMAS);
+        }
+        public static ArithmeticNumeric Calculate(ref byte* data, byte* dataEnd, LinkedList<ArithmeticSubstitute> substitutes, bool useBIDMAS) {
+            ArithmeticQueue scope = ArithmeticQueue.Parse(ref data, dataEnd, useBIDMAS);
             return scope.Calculate(substitutes);
         }
 
@@ -159,18 +281,31 @@ namespace Lipsis.Core {
 
         #region Parse
         public static ArithmeticQueue Parse(string data) {
-            return Parse(Encoding.ASCII.GetBytes(data));
+            return Parse(data, true);
         }
         public static ArithmeticQueue Parse(byte[] data) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Parse(ref ptr, fixedPtr + data.Length);
-            }
+            return Parse(data, true);
         }
         public static ArithmeticQueue Parse(ref byte* data, int length) {
-            return Parse(ref data, data + length);
+            return Parse(ref data, length, true);
         }
         public static ArithmeticQueue Parse(ref byte* data, byte* dataEnd) {
+            return Parse(ref data, dataEnd, true);
+        }
+
+        public static ArithmeticQueue Parse(string data, bool useBIDMAS) {
+            return Parse(Encoding.ASCII.GetBytes(data), useBIDMAS);
+        }
+        public static ArithmeticQueue Parse(byte[] data, bool useBIDMAS) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Parse(ref ptr, fixedPtr + data.Length, useBIDMAS);
+            }
+        }
+        public static ArithmeticQueue Parse(ref byte* data, int length, bool useBIDMAS) {
+            return Parse(ref data, data + length, useBIDMAS);
+        }
+        public static ArithmeticQueue Parse(ref byte* data, byte* dataEnd, bool useBIDMAS) {
             //define the list of scopes, operators and operands
             LinkedList<ArithmeticOperator> operators = new LinkedList<ArithmeticOperator>();
             LinkedList<ArithmeticOperand> operands = new LinkedList<ArithmeticOperand>();
@@ -192,6 +327,10 @@ namespace Lipsis.Core {
                 #region operator?
                 ArithmeticOperator op = parseOperator(*data);
                 if (op != ArithmeticOperator.None) {
+                    //if it's division, we make sure we don't lose 
+                    //precision when dividing operators (e.g 1/3)
+                    if (op == ArithmeticOperator.Divide) { containsDecimal = true; }
+                    
                     //make sure we do not process a negative number
                     //and treat it as an operator
                     bool isNegative = false;
@@ -283,7 +422,14 @@ namespace Lipsis.Core {
                 #endregion
             }
 
-            return new ArithmeticQueue(resultSize, containsDecimal, operators, operands);
+            ArithmeticQueue buffer = new ArithmeticQueue(resultSize, containsDecimal, operators, operands);
+
+            //bidmas?
+            if (useBIDMAS) {
+                buffer.SortBIDMAS();
+            }
+
+            return buffer;
         }
         #endregion
 
@@ -295,7 +441,7 @@ namespace Lipsis.Core {
             if (currentOperator == null) {
                 if (currentOperand != null) {
                     string ret = currentOperand.Value.ToString();
-                    if (currentOperand.Value.IsScope) {
+                    if (currentOperand.Value.IsQueue) {
                         ret = "(" + ret + ")";
                     }
                     if (currentOperand.Value.IsNegative) {
@@ -333,14 +479,14 @@ namespace Lipsis.Core {
                 //is it a multiple+scope/substitute? if so, we have it
                 //presented without the * (e.g 5n or 5(5))
                 if (op == ArithmeticOperator.Multiply && 
-                    (opAnd.IsSubstitution || opAnd.IsScope)) {
+                    (opAnd.IsSubstitution || opAnd.IsQueue)) {
                         opChar = '\0';
                 }
 
                 //define what the operand string is
                 //if the operand is a scope, add the scope parentheses
                 string opAndString = opAnd.ToString();
-                if (opAnd.IsScope) {
+                if (opAnd.IsQueue) {
                     opAndString = "(" + opAndString + ")";
                 }
                 if (opAnd.IsNegative) {
@@ -383,7 +529,6 @@ namespace Lipsis.Core {
                         buffer = ArithmeticNumeric.CreateOfSize(val.Size, newOpAnd.IsDecimal);
                         buffer += bufferCopy;
                     }
-
                 }
 
 
@@ -391,7 +536,7 @@ namespace Lipsis.Core {
                 operand = newOpAnd;
                 return;
             }
-            if (operand.IsScope) { 
+            if (operand.IsQueue) { 
                 ArithmeticNumeric ret = ((ArithmeticQueue)operand.Value).Calculate(subs);
                 operand = new ArithmeticOperand(ret, operand.IsNegative);
             }

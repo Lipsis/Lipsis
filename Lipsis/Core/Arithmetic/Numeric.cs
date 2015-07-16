@@ -1772,7 +1772,7 @@ namespace Lipsis.Core {
             return a;
         }
         public static ArithmeticNumeric operator -(ArithmeticNumeric a) {
-            return 0 - a;
+            return ArithmeticNumeric.CreateOfSize(a.Size, a.IsDecimal) - a;
         }
         public static ArithmeticNumeric operator *(ArithmeticNumeric a, ArithmeticNumeric b) {
             a.Multiply(b);
@@ -1840,16 +1840,19 @@ namespace Lipsis.Core {
         }
         public static ArithmeticNumeric CreateOfSize(int sizeInBytes, bool isDecimal) {
             switch (sizeInBytes) {
-                case 1: return (byte)0;
-                case 2: return (short)0;
+                case 1:
+                    if (isDecimal) { return (float)0; }
+                    return (byte)0;
+                case 2:
+                    if (isDecimal) { return (float)0; }
+                    return (short)0;
                 case 4:
                     if (isDecimal) { return (float)0; }
                     return (int)0;
                 case 8:
                     if (isDecimal) { return (double)0; }
                     return (long)0;
-                default:
-                    
+                default:                    
                     //round size to nearest valid size
                     if (sizeInBytes < 1) { sizeInBytes = 1; }
                     else if (sizeInBytes < 4) { sizeInBytes = 4; }

@@ -14,16 +14,19 @@ namespace Lipsis.Tests {
             ArithmeticSubstitute n = new ArithmeticSubstitute(3, 'n');
             subs.AddLast(n);
             subs.AddLast(new ArithmeticSubstitute(Math.PI, 'p'));
+            subs.AddLast(new ArithmeticSubstitute(Math.E, 'e'));
+
             
             while (true) {
                 Console.Write("In < ");
                 string calc = Console.ReadLine();
                 Console.Clear();
                 ArithmeticQueue scope = ArithmeticQueue.Parse(calc);
+                scope.HasDecimal = true;
                 
                 for (int c = 0; c < 20; c++) {
-                    n.Operand = c;
-                    ArithmeticNumeric res = ArithmeticQueue.Calculate(calc, subs);
+                    n.Operand = (sbyte)c;
+                    ArithmeticNumeric res = scope.Calculate(subs);
                     Console.WriteLine("[" + n + "] " + scope + "=" + res);
                 }
                 
