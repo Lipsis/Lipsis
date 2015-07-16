@@ -13,20 +13,23 @@ namespace Lipsis.Core {
             p_IsScope = false;
             p_IsNegative = isNegative;
 
-            if (value is ArithmeticScope) {
+            //queue?
+            if (value is ArithmeticQueue) {
                 p_IsScope = true;
                 return;
             }
 
-            p_IsDecimal = (value is float || value is double);
-            if (!p_IsDecimal) {
-                p_IsInteger = !(value is char);
+            //substitute?
+            if (value is char) { return; }
 
-                //invalid?
-                if (!p_IsInteger && !(value is char)) {
-                    throw new Exception("Value is not a valid type for an operand");
-                }
-            }
+            //attempt to use the object as a numeric type
+            ArithmeticNumeric numeric = (value is ArithmeticNumeric ?
+                (ArithmeticNumeric)value :
+                new ArithmeticNumeric(value));
+            
+            p_IsDecimal = numeric.IsDecimal;
+            p_IsInteger = !p_IsDecimal;
+            p_Value = numeric;
         }
 
         public object Value { get { return p_Value; } }
@@ -35,9 +38,12 @@ namespace Lipsis.Core {
         public bool IsSubstitution { get { return !p_IsInteger && !p_IsDecimal && !p_IsScope; } }
         public bool IsScope { get { return p_IsScope; } }
         public bool IsNumeric { get { return p_IsInteger || p_IsDecimal; } }
-        public bool IsNegative { get { return p_IsNegative; } }
+        public bool IsNegative {
+            get { return p_IsNegative; }
+            set { p_IsNegative = value; }
+        }
 
-        public static implicit operator ArithmeticOperand(ArithmeticScope value) { return new ArithmeticOperand(value); }
+        public static implicit operator ArithmeticOperand(ArithmeticQueue value) { return new ArithmeticOperand(value); }
         public static implicit operator ArithmeticOperand(sbyte value) { return new ArithmeticOperand(value); }
         public static implicit operator ArithmeticOperand(byte value) { return new ArithmeticOperand(value); }
         public static implicit operator ArithmeticOperand(short value) { return new ArithmeticOperand(value); }
@@ -49,5 +55,9 @@ namespace Lipsis.Core {
         public static implicit operator ArithmeticOperand(float value) { return new ArithmeticOperand(value); }
         public static implicit operator ArithmeticOperand(double value) { return new ArithmeticOperand(value); }
         public static implicit operator ArithmeticOperand(char value) { return new ArithmeticOperand(value); }
+
+        public override string ToString() {
+            return p_Value.ToString();
+        }
     }
 }

@@ -10,20 +10,25 @@ namespace Lipsis.Tests {
     public static class MainTest {
 
         public static unsafe void Main(string[] args) {
-
+            LinkedList<ArithmeticSubstitute> subs = new LinkedList<ArithmeticSubstitute>();
+            ArithmeticSubstitute n = new ArithmeticSubstitute(3, 'n');
+            subs.AddLast(n);
+            subs.AddLast(new ArithmeticSubstitute(Math.PI, 'p'));
+            
             while (true) {
-                LinkedList<ArithmeticSubstitute> subs = new LinkedList<ArithmeticSubstitute>();
-                subs.AddLast(new ArithmeticSubstitute(5, 'n'));
-                subs.AddLast(new ArithmeticSubstitute(Math.PI, 'p'));
-
                 Console.Write("In < ");
                 string calc = Console.ReadLine();
 
+                ArithmeticQueue scope = ArithmeticQueue.Parse(calc);
                 
-
-                ArithmeticScope scope = ArithmeticScope.Parse(calc);
-                Console.WriteLine(calc + "=" + ArithmeticScope.Calculate(calc, subs));
-                Console.WriteLine("");
+                for (int c = 0; c < 10; c++)
+                {
+                    n.Operand = c;
+                    ArithmeticNumeric res = ArithmeticQueue.Calculate(calc, subs);
+                    Console.WriteLine("[" + n + "] " +scope + "=" + res);
+                    Console.WriteLine(res.Size + " bytes wide");
+                }
+                
 
 
             }

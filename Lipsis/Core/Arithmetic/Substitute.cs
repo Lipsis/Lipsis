@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Lipsis.Core {
-    public struct ArithmeticSubstitute {
+    public class ArithmeticSubstitute {
         private ArithmeticOperand p_Operand;
         private char p_Name;
 
@@ -16,10 +16,13 @@ namespace Lipsis.Core {
         }
 
         public char Name { get { return p_Name; } }
-        public ArithmeticOperand Operand { get { return p_Operand; } }
+        public ArithmeticOperand Operand { 
+            get { return p_Operand; }
+            set { p_Operand = value; }
+        }
 
         public override string ToString() {
-            return p_Name + " = " + p_Operand.Value.ToString();
+            return p_Name + "=" + p_Operand.ToString();
         }
     }
 }
