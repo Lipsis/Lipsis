@@ -230,7 +230,7 @@ namespace Lipsis.Core {
             ArithmeticQueue scope = ArithmeticQueue.Parse(ref data, dataEnd, useBIDMAS);
             return scope.Calculate(substitutes);
         }
-
+        
         public ArithmeticNumeric Calculate() {
             return Calculate(new LinkedList<ArithmeticSubstitute>());
         }
@@ -340,6 +340,9 @@ namespace Lipsis.Core {
             sbyte resultSize = 1;
             bool containsDecimal = false;
 
+            //any functions in the list?
+            bool functionsListed = functions.Count != 0;
+
             //iterate through the data
             bool negativeFlag = false;
             while (data < dataEnd) { 
@@ -373,7 +376,7 @@ namespace Lipsis.Core {
                 #endregion
 
                 #region function?
-                if (isAlphabetic(*data)) {         
+                if (functionsListed && isAlphabetic(*data)) {         
                     //read until an open queue
                     byte* functionNameStart = data;
                     byte* functionNameEnd = (byte*)0;
@@ -456,7 +459,7 @@ namespace Lipsis.Core {
                     }
 
                     data++;
-                    ArithmeticQueue scope = Parse(ref data, dataEnd);
+                    ArithmeticQueue scope = Parse(ref data, dataEnd, functions);
                     operands.AddLast(new ArithmeticOperand(scope, negativeFlag));
                     negativeFlag = false;
                     continue;

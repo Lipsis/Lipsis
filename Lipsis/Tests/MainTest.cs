@@ -10,6 +10,8 @@ namespace Lipsis.Tests {
     public static class MainTest {
 
         public static unsafe void Main(string[] args) {
+            CSSSheet s = CSSSheet.Parse(File.ReadAllText("css.txt"));
+
             LinkedList<ArithmeticSubstitute> subs = new LinkedList<ArithmeticSubstitute>();
             ArithmeticSubstitute n = new ArithmeticSubstitute(3, 'n');
             subs.AddLast(n);
@@ -29,8 +31,6 @@ namespace Lipsis.Tests {
                     Console.WriteLine("[" + n + "] " + scope + "=" + res);
                 }
                 
-
-
             }
 
             while (true)

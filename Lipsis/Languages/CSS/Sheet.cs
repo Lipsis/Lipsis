@@ -95,7 +95,13 @@ namespace Lipsis.Languages.CSS {
                             }
                             data++;
 
-                            //deturmine whethere we process the scope as a ruleset 
+                            string[] names = new string[arguments.Count];
+                            int i = 0;
+                            foreach (STRPTR p in arguments) {
+                                names[i++] = Helpers.ReadString(p.PTR, p.ENDPRR);
+                            }
+
+                            //deturmine whether we process the scope as a ruleset 
                             //or a declaration by sampling the upcoming data
                             //and seeing if we hit a tell-tail sign of a ruleset
                             //or a declaration
@@ -116,26 +122,12 @@ namespace Lipsis.Languages.CSS {
 
                             #region declarations?
                             else {
-                                //create the scope declarations
-                                CSSDeclarationCollection dScope = new CSSDeclarationCollection();
-                                scope = dScope;
-
-                                //scan declarations we hit the end of the scope
-                                while (data < dataEnd) {
-                                    CSSDeclaration d = CSSDeclaration.Parse(ref data, dataEnd);
-                                    if (d == null) { break; }
-                                    dScope.AddDeclaration(d);
-                                    if (*data == '}') { data++; }
-
-                                    if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
-                                    if (*data == '}') { data++; break; }
-
-                                    continue;
-                                }
-
-                                break;
+                                //read it as a CSSSheet to support nested at-rules
+                                scope = Parse(ref data, dataEnd);
+                                if (*data == '}') { data++; }
                             }
                             #endregion
+
                             break;
                         }
                         #endregion
@@ -189,6 +181,9 @@ namespace Lipsis.Languages.CSS {
                 }
                 #endregion
 
+                //close already?
+                if (*data == '}') { break; }
+
                 //read the declaration
                 CSSDeclaration declaration = CSSDeclaration.Parse(ref data, dataEnd);
                 if (declaration == null) { break; }
@@ -197,18 +192,26 @@ namespace Lipsis.Languages.CSS {
                 sheet.AddDeclaration(declaration);
 
                 //at the end?
+                if (Helpers.SkipWhitespaces(ref data, dataEnd)) { break; }
                 if (*data == '}') { data++; }
             }
             
             return sheet;
         }
 
+        private static string sample(byte* data, int length) {
+            byte* endPtr = data + length;
+            string buffer = "";
+            while (data < endPtr) {
+                buffer += (char)*data++;
+            }
+            return buffer;
+        }
+        
 
         private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope) {
             string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR);
 
-            if (!(scope is CSSDeclarationCollection)) { return; }
-            sheet.AddDeclarations((scope as CSSDeclarationCollection));
 
             return;
         }
