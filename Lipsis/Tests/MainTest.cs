@@ -16,26 +16,11 @@ namespace Lipsis.Tests {
             subs.AddLast(new ArithmeticSubstitute(Math.PI, 'p'));
             subs.AddLast(new ArithmeticSubstitute(Math.E, 'e'));
 
-            LinkedList<ArithmeticFunction> functions = new LinkedList<ArithmeticFunction>();
-            functions.AddLast(ArithmeticFunction.FromDelegate(
-                "sin", delegate(ArithmeticNumeric arg) {
-                    return Math.Sin(Convert.ToDouble(arg.RAWObject));
-                }));
-            functions.AddLast(ArithmeticFunction.FromDelegate(
-                "cos", delegate(ArithmeticNumeric arg) {
-                    return Math.Cos(Convert.ToDouble(arg.RAWObject));
-                }));
-            functions.AddLast(ArithmeticFunction.FromDelegate(
-                            "sqrt", delegate(ArithmeticNumeric arg) {
-                                return Math.Sqrt(Convert.ToDouble(arg.RAWObject));
-            }));
-
-
             while (true) {
                 Console.Write("In < ");
                 string calc = Console.ReadLine();
                 Console.Clear();
-                ArithmeticQueue scope = ArithmeticQueue.Parse(calc, functions);
+                ArithmeticQueue scope = ArithmeticQueue.Parse(calc, ArithmeticQueue.DefaultFunctions);
                 scope.HasDecimal = true;
                 
                 for (int c = 0; c < 20; c++) {

@@ -703,5 +703,84 @@ namespace Lipsis.Core {
                     break;
             }
         }
+
+
+        #region default functions
+        private static LinkedList<ArithmeticFunction> p_DefaultFunctions;
+        private static Random p_Random = new Random();
+
+        static ArithmeticQueue() {
+            p_DefaultFunctions = new LinkedList<ArithmeticFunction>();
+
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("sin", func_sin));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("cos", func_cos));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("tan", func_tan));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("sinh", func_sinh));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("cosh", func_cosh));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("tanh", func_tanh));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("asin", func_asin));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("acos", func_acos));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("atan", func_atan));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("trunc", func_trunc));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("round", func_round));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("ceil", func_ceil));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("floor", func_floor));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("abs", func_abs));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("sqrt", func_sqrt));
+            p_DefaultFunctions.AddLast(ArithmeticFunction.FromDelegate("rand", func_rand));
+        }
+
+        public static LinkedList<ArithmeticFunction> DefaultFunctions { get { return p_DefaultFunctions; } }
+
+        private static ArithmeticNumeric func_sin(ArithmeticNumeric arg) {
+            return Math.Sin(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_cos(ArithmeticNumeric arg) {
+            return Math.Cos(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_tan(ArithmeticNumeric arg) {
+            return Math.Tan(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_asin(ArithmeticNumeric arg) {
+            return Math.Asin(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_acos(ArithmeticNumeric arg) {
+            return Math.Acos(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_atan(ArithmeticNumeric arg) {
+            return Math.Atan(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_abs(ArithmeticNumeric arg) {
+            return Math.Abs(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_sinh(ArithmeticNumeric arg) {
+            return Math.Sinh(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_cosh(ArithmeticNumeric arg) {
+            return Math.Cosh(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_tanh(ArithmeticNumeric arg) {
+            return Math.Tanh(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_trunc(ArithmeticNumeric arg) {
+            return Math.Truncate(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_sqrt(ArithmeticNumeric arg) {
+            return Math.Sqrt(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_floor(ArithmeticNumeric arg) {
+            return Math.Floor(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_ceil(ArithmeticNumeric arg) {
+            return Math.Ceiling(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_round(ArithmeticNumeric arg) {
+            return Math.Round(Convert.ToDouble(arg.RAWObject));
+        }
+        private static ArithmeticNumeric func_rand(ArithmeticNumeric arg) {
+            return p_Random.NextDouble();
+        }
+        
+        #endregion
     }
 }
