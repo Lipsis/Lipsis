@@ -12,34 +12,38 @@ namespace Lipsis.Languages.CSS {
         private LinkedList<CSSSelectorAttribute> p_Attributes;
         private CSSSelectorPreSelectorRelationship p_ParentRelationship; 
 
-        private CSSSelectorPseudoClass p_PseudoClass;
-        private CSSSelectorPseudoElement p_PseudoElement;
+        private CSSPseudoClass p_PseudoClass;
+        private CSSPseudoElement p_PseudoElement;
+
+        private LinkedList<pseudoClassWithArg> p_PseudoClassArguments;
 
         internal CSSSelectorType(string query, 
                                  CSSSelectorElementTargetType type, 
                                  LinkedList<CSSSelectorAttribute> attributes,
-                                 CSSSelectorPseudoClass pseudoClass,
-                                 CSSSelectorPseudoElement pseudoElement,
-                                 CSSSelectorPreSelectorRelationship relationship) {
+                                 CSSPseudoClass pseudoClass,
+                                 CSSPseudoElement pseudoElement,
+                                 CSSSelectorPreSelectorRelationship relationship,
+                                 LinkedList<pseudoClassWithArg> pseudoClassArguments) {
             p_Query = query;
             p_Type = type;
             p_Attributes = attributes;
             p_PseudoElement = pseudoElement;
             p_PseudoClass = pseudoClass;
             p_ParentRelationship = relationship;
-                                 }
+            p_PseudoClassArguments = pseudoClassArguments;
+        }
 
         public string Query { get { return p_Query; } }
 
-        public bool HasClass(CSSSelectorPseudoClass compare) {
+        public bool HasClass(CSSPseudoClass compare) {
             return (p_PseudoClass & compare) == compare;
         }
-        public bool HasElement(CSSSelectorPseudoElement compare) {
+        public bool HasElement(CSSPseudoElement compare) {
             return (p_PseudoElement & compare) == compare;
         }
 
-        public CSSSelectorPseudoClass PseudoClass { get { return p_PseudoClass; } }
-        public CSSSelectorPseudoElement PseudoElement { get { return p_PseudoElement; } }
+        public CSSPseudoClass PseudoClass { get { return p_PseudoClass; } }
+        public CSSPseudoElement PseudoElement { get { return p_PseudoElement; } }
 
         public CSSSelectorPreSelectorRelationship PreSelectorRelationship { get { return p_ParentRelationship; } }
 
@@ -62,6 +66,17 @@ namespace Lipsis.Languages.CSS {
             CSSSelectorAttribute[] attributes = Helpers.LinkedListToArray(p_Attributes);
             buffer += Helpers.FlattenToString(attributes, "");
             return buffer;
+        }
+
+
+        internal struct pseudoClassWithArg {
+            public pseudoClassWithArg(CSSPseudoClass c, ICSSPseudoClassArgument a) {
+                cls = c;
+                argument = a;
+            }
+
+            public CSSPseudoClass cls;
+            public ICSSPseudoClassArgument argument;
         }
     }
 }

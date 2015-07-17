@@ -69,6 +69,8 @@
     <Compile Include="Languages\CSS\Selectors\Enums\PreSelectorRelationship.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\PseudoClass.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\PseudoElement.cs" />
+    <Compile Include="Languages\CSS\Selectors\PseudoClass\IArgument.cs" />
+    <Compile Include="Languages\CSS\Selectors\PseudoClass\Nth.cs" />
     <Compile Include="Languages\CSS\Selectors\Selector.cs" />
     <Compile Include="Languages\CSS\Selectors\Type.cs" />
     <Compile Include="Languages\CSS\Sheet.cs" />

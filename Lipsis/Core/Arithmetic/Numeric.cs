@@ -1800,6 +1800,15 @@ namespace Lipsis.Core {
             return a;
         }
 
+        public static ArithmeticNumeric operator <<(ArithmeticNumeric a, int b) {
+            a.ShiftLeft(b);
+            return a;
+        }
+        public static ArithmeticNumeric operator >>(ArithmeticNumeric a, int b) {
+            a.ShiftRight(b);
+            return a;
+        }
+
         public static bool operator ==(ArithmeticNumeric a, ArithmeticNumeric b) {
             return a.Equals(b);
         }
@@ -1817,6 +1826,47 @@ namespace Lipsis.Core {
         public static implicit operator ArithmeticNumeric(ulong value) { return new ArithmeticNumeric(value); }
         public static implicit operator ArithmeticNumeric(double value) { return new ArithmeticNumeric(value); }
         public static implicit operator ArithmeticNumeric(float value) { return new ArithmeticNumeric(value); }
+
+        public static explicit operator sbyte(ArithmeticNumeric value) {
+            if (value.p_Value is sbyte) { return (sbyte)value.p_Value; }
+            return Convert.ToSByte(value.p_Value);
+        }
+        public static explicit operator byte(ArithmeticNumeric value) {
+            if (value.p_Value is byte) { return (byte)value.p_Value; }
+            return Convert.ToByte(value.p_Value);
+        }
+        public static explicit operator short(ArithmeticNumeric value) {
+            if (value.p_Value is short) { return (short)value.p_Value; }
+            return Convert.ToInt16(value.p_Value);
+        }
+        public static explicit operator ushort(ArithmeticNumeric value) {
+            if (value.p_Value is ushort) { return (ushort)value.p_Value; }
+            return Convert.ToUInt16(value.p_Value);
+        }
+        public static explicit operator int(ArithmeticNumeric value) {
+            if (value.p_Value is int) { return (int)value.p_Value; }
+            return Convert.ToInt32(value.p_Value);
+        }
+        public static explicit operator uint(ArithmeticNumeric value) {
+            if (value.p_Value is uint) { return (uint)value.p_Value; }
+            return Convert.ToUInt32(value.p_Value);
+        }
+        public static explicit operator long(ArithmeticNumeric value) {
+            if (value.p_Value is long) { return (long)value.p_Value; }
+            return Convert.ToInt64(value.p_Value);
+        }
+        public static explicit operator ulong(ArithmeticNumeric value) {
+            if (value.p_Value is ulong) { return (ulong)value.p_Value; }
+            return Convert.ToUInt64(value.p_Value);
+        }
+        public static explicit operator float(ArithmeticNumeric value) {
+            if (value.p_Value is float) { return (float)value.p_Value; }
+            return Convert.ToSingle(value.p_Value);
+        }
+        public static explicit operator double(ArithmeticNumeric value) {
+            if (value.p_Value is double) { return (double)value.p_Value; }
+            return Convert.ToDouble(value.p_Value);
+        }
         #endregion
         
         public static ArithmeticNumeric FromString(string str, bool isDecimal, byte length) {

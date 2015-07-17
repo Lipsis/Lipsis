@@ -192,8 +192,7 @@ namespace Lipsis.Languages.CSS {
             
             return sheet;
         }
-
-
+        
         private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope) {
             string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR);
 

@@ -3,7 +3,7 @@
 namespace Lipsis.Languages.CSS {
 
     [Flags]
-    public enum CSSSelectorPseudoElement { 
+    public enum CSSPseudoElement { 
         None = 0,
         After = 0x1,
         Before = 0x2,

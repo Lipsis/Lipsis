@@ -77,6 +77,19 @@ namespace Lipsis.Core {
             return this;
         }
 
+        //note: we have to clone the list to protect against accidental corruption
+        //e.g the caller performs remove/add
+        public LinkedList<ArithmeticOperator> Operators {
+            get {
+                return Helpers.CloneLinkedList(p_Operators, null);
+            }
+        }
+        public LinkedList<ArithmeticOperand> Operands {
+            get {
+                return Helpers.CloneLinkedList(p_Operands, null);
+            }
+        }
+
         public void SortBIDMAS() {
             //already sorted?/nothing to sort?
             if (p_BIDMASSorted || p_Operators.Count == 0) { return; }

@@ -170,8 +170,9 @@ namespace Lipsis.Languages.CSS {
                 #endregion
 
                 #region read the pseudo element/class
-                CSSSelectorPseudoClass pseudoClass = CSSSelectorPseudoClass.None;
-                CSSSelectorPseudoElement pseudoElement = CSSSelectorPseudoElement.None;
+                CSSPseudoClass pseudoClass = CSSPseudoClass.None;
+                CSSPseudoElement pseudoElement = CSSPseudoElement.None;
+                LinkedList<CSSSelectorType.pseudoClassWithArg> pseudoClassArguments = new LinkedList<CSSSelectorType.pseudoClassWithArg>();
 
                 //pseudo?
                 while (*data == ':') {
@@ -192,35 +193,62 @@ namespace Lipsis.Languages.CSS {
 
                     //process the name
                     bool found = false;
+                    bool isClass = false;
+                    CSSPseudoClass classType = CSSPseudoClass.None;
                     string pseudoName = Helpers.ReadString(pseudoPtr, pseudoPtrEnd);
                     pseudoName = pseudoName.Replace("-", "");
                     if (elementOnly) {
-                        pseudoElement |= tryParseEnum<CSSSelectorPseudoElement>(pseudoName, out found);       
+                        pseudoElement |= tryParseEnum<CSSPseudoElement>(pseudoName, out found);       
                     }
 
                     if (!found) {
-                        pseudoClass |= tryParseEnum<CSSSelectorPseudoClass>(pseudoName, out found);
+                        classType = tryParseEnum<CSSPseudoClass>(pseudoName, out found);
+                        pseudoClass |= classType;
+                        if (found) { isClass = true; }
                         if (!found && !elementOnly) {
-                            pseudoElement |= tryParseEnum<CSSSelectorPseudoElement>(pseudoName, out found);
+                            pseudoElement |= tryParseEnum<CSSPseudoElement>(pseudoName, out found);
+                        }
+
+                    }
+                    
+                    #region read the pseudo arguments
+                    //read the arguments?
+                    if (isClass && *data == '(') {
+                        data++;
+
+                        //read the value
+                        Helpers.SkipWhitespaces(ref data, dataEnd);
+                        byte* argumentPtr, argumentPtrEnd;
+                        if (readStringValue(ref data, dataEnd, out argumentPtr, out argumentPtrEnd)) { break; }
+
+                        //go to the end of the argument scope
+                        while (data < dataEnd && *data++ != ')') ;
+
+                        #region parse the argument data
+                        ICSSPseudoClassArgument arg = null;
+                        bool addArg = false;
+
+                        //nth?
+                        if (classType >= CSSPseudoClass._LIP_NTH_MIN &&
+                            classType <= CSSPseudoClass._LIP_NTH_MAX) {
+                                arg = new CSSPseudoClass_Nth(argumentPtr, argumentPtrEnd + 1, classType, out addArg);
+                        }
+                        //not?
+                        else if (classType == CSSPseudoClass.Not) { 
+                            
+                        }
+                        
+
+                        #endregion
+
+                        //add the argument
+                        if (addArg) {
+                            pseudoClassArguments.AddLast(new CSSSelectorType.pseudoClassWithArg(
+                                classType,
+                                arg));
                         }
                     }
-                }
-
-                #endregion
-
-                #region read the pseudo arguments
-
-                //read the arguments?
-                if (*data == '(') {
-                    data++;
-
-                    //read the value
-                    Helpers.SkipWhitespaces(ref data, dataEnd);
-                    byte* argumentPtr, argumentPtrEnd;
-                    if (readStringValue(ref data, dataEnd, out argumentPtr, out argumentPtrEnd)) { break; }
-
-                    //go to the end of the argument scope
-                    while (data < dataEnd && *data++ != ')') ;
+                    #endregion
                 }
 
                 #endregion
@@ -232,7 +260,8 @@ namespace Lipsis.Languages.CSS {
                     attributes,
                     pseudoClass,
                     pseudoElement,
-                    preRelation);
+                    preRelation,
+                    pseudoClassArguments);
                 buffer.AddLast(selectorType);
 
                 //reset the pre-relation
