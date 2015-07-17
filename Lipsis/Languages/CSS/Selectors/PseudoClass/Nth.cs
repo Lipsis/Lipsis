@@ -87,30 +87,20 @@ namespace Lipsis.Languages.CSS {
             }
             #endregion
 
-            //is the first operand a queue and the only operand
-            //if so, we select that queue as the expression.
-            //if it isn't then we know we don't know how to 
-            //reverse it because the upcoming statements are ONLY
-            //in one nested queue.
-            bool isAloneQueue = firstOperand.IsQueue && 
-                           operandsCount == 1 &&
-                           operatorsCount == 0;
-            if (isAloneQueue) {
-                p_Expression = (ArithmeticQueue)firstOperand.Value;
-                operators = p_Expression.Operators;
-                operands = p_Expression.Operands;
-                operatorsCount = operators.Count;
-                operandsCount = operands.Count;
-            }
-            else {
-                return;
-            }
+
+            //create a queue which is the flattened version of the expression
+            //so we can easily match the pattern (since every pattern we can
+            //reverse does not have any sub-queues
+            ArithmeticQueue flatten = p_Expression.Flatten();
+            operators = flatten.Operators;
+            operands = flatten.Operands;
+            operatorsCount = operators.Count;
+            operandsCount = operands.Count;
 
             //get the first node from the operators and operands
             //list so we can easily cycle through them
             LinkedListNode<ArithmeticOperator> currentOperator = operators.First;
             LinkedListNode<ArithmeticOperand> currentOperand = operands.First;
-
 
             #region "(a [op] n)"
             if (operatorsCount == 1 &&
@@ -157,8 +147,24 @@ namespace Lipsis.Languages.CSS {
                        op1 == ArithmeticOperator.Modulus ||
                        op2 == ArithmeticOperator.Modulus) { return; }
                     
-                    
+                    //verify that "n" is what we have as the name of the
+                    //subtitute.
+                    if ((char)n.Value != 'n') { success = false; return; }
+    
+                    //get the reverse of the two operators
+                    op1 = oppositeOperator(op1);
+                    op2 = oppositeOperator(op2);
 
+                    //group n and b together to insure that it's 
+                    //correctly reversed (i.e (b-n)/a
+                    ArithmeticQueue bQueue = new ArithmeticQueue();
+                    bQueue.AddOperation(op2, n, b);
+
+                    //add the operands and operators or this expression but
+                    //in reverse order to make n the subject
+                    p_Reverse = new ArithmeticQueue();
+                    p_Reverse.AddOperation(op1, new ArithmeticOperand(bQueue, false), a);
+                    return;
             }
             #endregion
 

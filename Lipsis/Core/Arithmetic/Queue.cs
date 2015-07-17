@@ -148,6 +148,71 @@ namespace Lipsis.Core {
             p_HasDecimal = false;
         }
 
+        public ArithmeticQueue Flatten() { 
+            //return a new queue which has all the scopes removed
+            //and all of it's operators/operands added to this queue
+            LinkedList<ArithmeticOperator> newOperators = new LinkedList<ArithmeticOperator>();
+            LinkedList<ArithmeticOperand> newOperands = new LinkedList<ArithmeticOperand>();
+
+            flattenQueue(newOperators, newOperands, this);
+
+            return new ArithmeticQueue(
+                p_ResultSize,
+                p_HasDecimal,
+                newOperators,
+                newOperands);
+        }
+        private void flattenQueue(LinkedList<ArithmeticOperator> newOperators, LinkedList<ArithmeticOperand> newOperands, ArithmeticQueue q) {
+            LinkedListNode<ArithmeticOperator> currentOperator = q.p_Operators.First;
+            LinkedListNode<ArithmeticOperand> currentOperand = q.p_Operands.First;
+
+            //no operands?
+            if (currentOperand == null) {
+                return;
+            }
+
+            //add the first operand
+            if (currentOperand.Value.IsQueue) {
+                flattenQueue(
+                    newOperators,
+                    newOperands,
+                    (ArithmeticQueue)currentOperand.Value.Value);
+            }
+            else {
+                newOperands.AddLast(currentOperand.Value);                
+            }
+            currentOperand = currentOperand.Next;
+
+            //no operators?
+            if (currentOperator == null) {
+                return;
+            }
+
+            //iterate over the operators
+            while (currentOperator != null) { 
+                
+                //add the operator
+                newOperators.AddLast(currentOperator.Value);
+
+                //grab the operand
+                ArithmeticOperand operand = currentOperand.Value;
+                
+                //queue?
+                if (operand.IsQueue) {
+                    flattenQueue(
+                        newOperators,
+                        newOperands,
+                        (ArithmeticQueue)operand.Value);
+                }
+                else {
+                    newOperands.AddLast(operand);
+                }
+
+                currentOperand = currentOperand.Next;
+                currentOperator = currentOperator.Next;
+            }
+        }
+
         public sbyte ResultSize {
             get { return p_ResultSize; }
             set { p_ResultSize = value; }
@@ -568,7 +633,7 @@ namespace Lipsis.Core {
             //define the return buffer and set it to the first operand
             ArithmeticOperand firstOperand = currentOperand.Value;
             currentOperand = currentOperand.Next;
-            string buffer = firstOperand.ToString();
+            string buffer = "(" + firstOperand.ToString();
             if (firstOperand.IsNegative) { buffer = "-" + buffer; }
 
             //iterate over the operators
@@ -612,7 +677,7 @@ namespace Lipsis.Core {
                 currentOperand = currentOperand.Next;
             }
 
-            return buffer;
+            return buffer + ")";
         }
 
         private static bool isAlphabetic(byte b) {
