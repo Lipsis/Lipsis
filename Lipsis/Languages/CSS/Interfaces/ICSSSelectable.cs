@@ -3,6 +3,6 @@
 
 namespace Lipsis.Languages.CSS {
     public interface ICSSSelectable {
-        bool AppliesTo(MarkupElement element, CSSPseudoClass elementState);
+        bool AppliesTo(MarkupElement element);
     }
 }

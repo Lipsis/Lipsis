@@ -49,7 +49,10 @@ namespace Lipsis.Languages.CSS {
             LinkedListNode<ArithmeticOperand> currentOperand = p_Expression.Operands.First;
             while (currentOperand != null) {
                 ArithmeticOperand current = currentOperand.Value;
-                if (!current.IsSubstitution) { continue; }
+                if (!current.IsSubstitution) {
+                    currentOperand = currentOperand.Next;
+                    continue; 
+                }
                 ArithmeticSubstitute sub = current.Value as ArithmeticSubstitute;
 
                 //invalid
@@ -69,6 +72,8 @@ namespace Lipsis.Languages.CSS {
 
 
         }
+
+        
 
         private byte toLower(byte b) {
             if (b >= 'A' && b <= 'Z') {

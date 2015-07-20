@@ -53,7 +53,7 @@
     <Compile Include="Core\Arithmetic\Queue.cs" />
     <Compile Include="Core\Arithmetic\Numeric.cs" />
     <Compile Include="Core\Arithmetic\Substitute.cs" />
-    <Compile Include="Core\BaseObjects\Node.cs" />
+    <Compile Include="Core\Node.cs" />
     <Compile Include="Core\Arithmetic\Operator.cs" />
     <Compile Include="Core\Helpers\Array.cs" />
     <Compile Include="Core\Helpers\Data.cs" />
