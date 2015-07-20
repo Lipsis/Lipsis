@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 
 using Lipsis.Core;
+using Lipsis.Languages.Markup;
 
 namespace Lipsis.Languages.CSS {
     public sealed unsafe class CSSSelector {
@@ -354,7 +355,7 @@ namespace Lipsis.Languages.CSS {
             return true;
         }
         #endregion
-        
+
         public override string ToString() {
             string buffer = "";
             

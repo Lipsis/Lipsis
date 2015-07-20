@@ -633,9 +633,9 @@ namespace Lipsis.Core {
             //define the return buffer and set it to the first operand
             ArithmeticOperand firstOperand = currentOperand.Value;
             currentOperand = currentOperand.Next;
-            string buffer = "(" + firstOperand.ToString();
-            if (firstOperand.IsNegative) { buffer = "-" + buffer; }
-
+            string buffer = firstOperand.ToString();
+            if (firstOperand.IsNegative) { buffer = "(-" + buffer; }
+            else { buffer = "(" + buffer; }
             //iterate over the operators
             while (currentOperator != null) {
                 ArithmeticOperator op = currentOperator.Value;
