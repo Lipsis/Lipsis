@@ -10,6 +10,10 @@ namespace Lipsis.Languages.CSS {
         FirstLetter = 0x4,
         FirstLine = 0x8,
         Selection = 0x10,
-        Backdrop = 0x20
+        Backdrop = 0x20,
+
+
+        _LIP_MIN = After,
+        _LIP_MAX = Backdrop
     }
 }

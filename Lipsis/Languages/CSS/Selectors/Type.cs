@@ -55,6 +55,8 @@ namespace Lipsis.Languages.CSS {
        
         public override string ToString() {
             string buffer = "";
+
+            //add the type
             switch (p_Type) {
                 case CSSSelectorElementTargetType.All: buffer = "*"; break;
                 case CSSSelectorElementTargetType.Class: buffer = "."; break;
@@ -63,11 +65,98 @@ namespace Lipsis.Languages.CSS {
 
             buffer += p_Query;
 
+            //add the attributes
             CSSSelectorAttribute[] attributes = Helpers.LinkedListToArray(p_Attributes);
             buffer += Helpers.FlattenToString(attributes, "");
+
+            #region add the pseudo classes
+            long[] pseudoClassMatches = detectEnumValues(
+                (long)p_PseudoClass,
+                1,
+                (long)CSSPseudoClass._LIP_MAX);
+            int pseudoClassMatchesCount = pseudoClassMatches.Length;
+            for (int c = 0; c < pseudoClassMatchesCount; c++) {
+                long value = pseudoClassMatches[c];
+                
+                //add the string value
+                buffer += ":" + getPseudoClassString((CSSPseudoClass)value);
+
+                //require arguments?
+                if (value >= (long)CSSPseudoClass._LIP_ARG_MIN_VALUE &&
+                   value <= (long)CSSPseudoClass._LIP_ARG_MAX_VALUE) {
+                       CSSPseudoClass cls = (CSSPseudoClass)value;
+
+                        //look for the argument
+                        IEnumerator<pseudoClassWithArg> e = p_PseudoClassArguments.GetEnumerator();
+                        while (e.MoveNext()) {
+                            pseudoClassWithArg current = e.Current;
+                            if (current.cls != cls) { continue; }
+                            buffer += current.argument;
+                            break;
+                        }
+                        e.Dispose();
+                }
+            }
+            #endregion
+
+            #region add the pseudo elements
+            long[] pseudoElementMatches = detectEnumValues(
+                (long)p_PseudoElement,
+                1,
+                (long)CSSPseudoElement._LIP_MAX);
+            int pseudoElementMatchesCount = pseudoElementMatches.Length;
+            for (int c = 0; c < pseudoElementMatchesCount; c++) {
+                CSSPseudoElement value = (CSSPseudoElement)pseudoElementMatches[c];
+                buffer += "::" + getPseudoElementString(value);
+            }
+            #endregion
+
             return buffer;
         }
 
+        private long[] detectEnumValues(long value, long min, long max) {
+            long[] buffer = new long[0];
+
+            //cycle through the min/max and look for any 
+            //power of 2 that is inside the value.
+            for (long c = min; c != max; c <<= 1) {
+                if ((value & c) == c) {
+                    Array.Resize(ref buffer, buffer.Length + 1);
+                    buffer[buffer.Length - 1] = c;
+                }
+            }
+
+            return buffer;
+        }
+        private string getPseudoClassString(CSSPseudoClass cls) {
+            switch (cls) {
+                case CSSPseudoClass.FirstChild: return "first-child";
+                case CSSPseudoClass.FirstOfType: return "first-of-type";
+                case CSSPseudoClass.InRange: return "in-range";
+                case CSSPseudoClass.LastChild: return "last-child";
+                case CSSPseudoClass.LastOfType: return "last-of-type";
+                case CSSPseudoClass.NthChild: return "nth-child";
+                case CSSPseudoClass.NthLastChild: return "nth-last-child";
+                case CSSPseudoClass.NthLastOfType: return "nth-last-of-type";
+                case CSSPseudoClass.NthOfType: return "nth-of-type";
+                case CSSPseudoClass.OnlyChild: return "only-child";
+                case CSSPseudoClass.OnlyOfType: return "only-of-type";
+                case CSSPseudoClass.OutOfRange: return "out-of-range";
+                case CSSPseudoClass.ReadOnly: return "read-only";
+                case CSSPseudoClass.ReadWrite: return "read-write";
+                
+                default:
+                    return cls.ToString().ToLower();
+            }
+        }
+        private string getPseudoElementString(CSSPseudoElement element) {
+            switch (element) {
+                case CSSPseudoElement.FirstLetter: return "first-letter";
+                case CSSPseudoElement.FirstLine: return "first-line";
+                default:
+                    return element.ToString().ToLower();
+            }
+        }
 
         internal struct pseudoClassWithArg {
             public pseudoClassWithArg(CSSPseudoClass c, ICSSPseudoClassArgument a) {

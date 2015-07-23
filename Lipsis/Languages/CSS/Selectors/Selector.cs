@@ -16,18 +16,31 @@ namespace Lipsis.Languages.CSS {
 
         #region Parsing
         public static CSSSelector Parse(string data) {
-            return Parse(Encoding.ASCII.GetBytes(data));
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSSelector Parse(byte[] data) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Parse(ref ptr, ptr + data.Length);
-            }
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSSelector Parse(ref byte* data, int length) {
-            return Parse(ref data, data + length);
+            return Parse(ref data, length, Encoding.ASCII);
         }
-        public static CSSSelector Parse(ref byte* data, byte* dataEnd) { 
+        public static CSSSelector Parse(ref byte* data, byte* dataEnd) {
+            return Parse(ref data, dataEnd, Encoding.ASCII);
+        }
+
+        public static CSSSelector Parse(string data, Encoding encoder) {
+            return Parse(encoder.GetBytes(data), encoder);
+        }
+        public static CSSSelector Parse(byte[] data, Encoding encoder) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Parse(ref ptr, ptr + data.Length, encoder);
+            }
+        }
+        public static CSSSelector Parse(ref byte* data, int length, Encoding encoder) {
+            return Parse(ref data, data + length, encoder);
+        }
+        public static CSSSelector Parse(ref byte* data, byte* dataEnd, Encoding encoder) { 
             //define the return buffer
             LinkedList<CSSSelectorType> buffer = new LinkedList<CSSSelectorType>();
 
@@ -104,7 +117,7 @@ namespace Lipsis.Languages.CSS {
                     //add an attribute to say to compare id/class attributes on elements
                     attributes.AddLast(new CSSSelectorAttribute(
                         (isClass ? "class" : "id"),
-                        Helpers.ReadString(valPtr, valPtrEnd),
+                        Helpers.ReadString(valPtr, valPtrEnd, encoder),
                         CSSSelectorAttributeCompareType.WhitespaceSplitMatch));
                 }
                 #endregion
@@ -157,8 +170,8 @@ namespace Lipsis.Languages.CSS {
                             
                             //add the attribute
                             attributes.AddLast(new CSSSelectorAttribute(
-                                Helpers.ReadString(attributeNamePtr, attributeNameEndPtr),
-                                Helpers.ReadString(valuePtr, valuePtrEnd),
+                                Helpers.ReadString(attributeNamePtr, attributeNameEndPtr, encoder),
+                                Helpers.ReadString(valuePtr, valuePtrEnd, encoder),
                                 compareType));
                         
                             //is there another attribute to read?
@@ -196,7 +209,7 @@ namespace Lipsis.Languages.CSS {
                     bool found = false;
                     bool isClass = false;
                     CSSPseudoClass classType = CSSPseudoClass.None;
-                    string pseudoName = Helpers.ReadString(pseudoPtr, pseudoPtrEnd);
+                    string pseudoName = Helpers.ReadString(pseudoPtr, pseudoPtrEnd, encoder);
                     pseudoName = pseudoName.Replace("-", "");
                     if (elementOnly) {
                         pseudoElement |= tryParseEnum<CSSPseudoElement>(pseudoName, out found);       
@@ -256,7 +269,7 @@ namespace Lipsis.Languages.CSS {
 
                 //add the selector
                 CSSSelectorType selectorType = new CSSSelectorType(
-                    Helpers.ReadString(namePtr, nameEnd),
+                    Helpers.ReadString(namePtr, nameEnd, encoder),
                     type,
                     attributes,
                     pseudoClass,

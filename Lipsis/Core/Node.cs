@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Lipsis.Core {
-    public class Node : IEnumerable {
+    public class Node : IEnumerable, ICloneable {
         private LinkedList<Node> p_Children;
         private LinkedListNode<Node> p_InternalInstance;
 
@@ -18,6 +19,10 @@ namespace Lipsis.Core {
         internal Node() {
             //initialize the children instances
             p_Children = new LinkedList<Node>();    
+        }
+        internal Node(LinkedList<Node> children) {
+            p_Children = children;
+            p_ChildCount = children.Count;
         }
 
         public int Index { get { return p_Index; } }
@@ -256,6 +261,42 @@ namespace Lipsis.Core {
         }
 
         public IEnumerator GetEnumerator() { return p_Children.GetEnumerator(); }
+
+        public object Clone() { 
+            //define the node to return (which will be the childs parent)
+            Node buffer = CloneCreateNode(this);
+
+            //clone every node
+            LinkedList<Node> children = new LinkedList<Node>();
+            IEnumerator<Node> e = p_Children.GetEnumerator();
+            Node previous = null;
+            int index = 0;
+            while (e.MoveNext()) {
+                Node cloned = e.Current.Clone() as Node;
+                cloned.p_Parent = buffer;
+
+                //setup the clone so it is setup in
+                //the right place where it is in the
+                //child list.
+                cloned.p_Index = index++;
+                cloned.p_LeftSibling = previous;
+                if (previous != null) {
+                    previous.p_RightSibling = cloned;
+                }
+                previous = cloned;
+
+                //add the cloned node to the child list.
+                children.AddLast(cloned);
+            }
+
+            //clean up
+            e.Dispose();
+            buffer.p_Children = children;
+            buffer.p_ChildCount = index;
+            buffer.p_LastNode = previous;
+            return buffer;
+        }
+        protected virtual Node CloneCreateNode(Node original) { return new Node(); }
 
         public override string ToString() {
             return "Index = " + Index + ", Children = " + ChildCount;

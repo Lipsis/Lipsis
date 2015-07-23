@@ -7,11 +7,44 @@ namespace Lipsis.Core {
 
         public ArithmeticOperand(object value) : this(value, false) { }
         public ArithmeticOperand(object value, bool isNegative) {
-            p_Value = value;
             p_IsInteger = false;
             p_IsDecimal = false;
             p_IsQueue = false;
+            p_IsFunction = false;
             p_IsNegative = isNegative;
+            p_Value = value;
+
+            setValue(value, isNegative, false);
+        }
+
+        public object Value { 
+            get { return p_Value; }
+            set {
+                setValue(value, false, false);
+                if (IsNumeric) {
+                    p_IsNegative = (double)((ArithmeticNumeric)p_Value) < 0;
+                }
+            }
+        }
+        public bool IsInteger { get { return p_IsInteger; } }
+        public bool IsDecimal { get { return p_IsDecimal; } }
+        public bool IsSubstitution { get { return !p_IsInteger && !p_IsDecimal && !p_IsQueue && !p_IsFunction; } }
+        public bool IsQueue { get { return p_IsQueue; } }
+        public bool IsNumeric { get { return p_IsInteger || p_IsDecimal; } }
+        public bool IsFunction { get { return p_IsFunction; } }
+        public bool IsNegative {
+            get { return p_IsNegative; }
+            set { p_IsNegative = value; }
+        }
+
+        internal void setValue(object value, bool isNegative, bool trustIsEqual) {
+            p_Value = value;
+            p_IsNegative = isNegative;
+
+            if (trustIsEqual) { return; }
+            p_IsInteger = false;
+            p_IsDecimal = false;
+            p_IsQueue = false;
             p_IsFunction = false;
 
             //function?
@@ -37,18 +70,6 @@ namespace Lipsis.Core {
             p_IsDecimal = numeric.IsDecimal;
             p_IsInteger = !p_IsDecimal;
             p_Value = numeric;
-        }
-
-        public object Value { get { return p_Value; } }
-        public bool IsInteger { get { return p_IsInteger; } }
-        public bool IsDecimal { get { return p_IsDecimal; } }
-        public bool IsSubstitution { get { return !p_IsInteger && !p_IsDecimal && !p_IsQueue && !p_IsFunction; } }
-        public bool IsQueue { get { return p_IsQueue; } }
-        public bool IsNumeric { get { return p_IsInteger || p_IsDecimal; } }
-        public bool IsFunction { get { return p_IsFunction; } }
-        public bool IsNegative {
-            get { return p_IsNegative; }
-            set { p_IsNegative = value; }
         }
 
         public static implicit operator ArithmeticOperand(ArithmeticQueue value) { return new ArithmeticOperand(value); }

@@ -14,10 +14,8 @@ namespace Lipsis.Languages.CSS {
                 });
         }
 
-        private ArithmeticQueue p_Reverse;
         private ArithmeticQueue p_Expression;
-        private LinkedList<ArithmeticSubstitute> p_Substitutes;
-        private ArithmeticSubstitute p_SubstituteN;
+        private int p_ExpressionResult;
         private bool p_Odd, p_Even;
         private bool p_HasNSubstitute = false;
 
@@ -42,44 +40,82 @@ namespace Lipsis.Languages.CSS {
 
             //parse the data as an arithmetic expression
             p_Expression = ArithmeticQueue.Parse(ref data, dataEnd);
-           
+            ArithmeticQueue flatten = p_Expression.Flatten();
+
             //does the expression contain any substitutes? 
             //if so, we add "n" as a substitute (IF it is n, if
             //it isn't then it is an invalid nth* class.
-            LinkedListNode<ArithmeticOperand> currentOperand = p_Expression.Operands.First;
+            LinkedListNode<ArithmeticOperand> currentOperand = flatten.Operands.First;
             while (currentOperand != null) {
+                //is the operand a substitute?
                 ArithmeticOperand current = currentOperand.Value;
                 if (!current.IsSubstitution) {
                     currentOperand = currentOperand.Next;
                     continue; 
                 }
-                ArithmeticSubstitute sub = current.Value as ArithmeticSubstitute;
 
-                //invalid
-                if (sub.Name != 'n') {
+                
+                //invalid? (the name has to be "n")
+                if ((char)current.Value != 'n') {
                     success = false;
                     break;
                 }
 
-                //create a new counter substitute
-                p_SubstituteN = new ArithmeticSubstitute(
-                    new ArithmeticOperand(0),
-                    'n');
-                p_Substitutes = new LinkedList<ArithmeticSubstitute>();
-                p_Substitutes.AddLast(p_SubstituteN);
+                p_HasNSubstitute = true;
                 break;
             }
 
-
+            //if there is no "n" substitute, pre-calculate the expression
+            //so we don't have to constantly calculate everytime we check.
+            if (success && !p_HasNSubstitute) {
+                p_ExpressionResult = (int)p_Expression.Calculate();
+            }
         }
 
-        
+
+        public bool AppliesTo(MarkupElement originalElement, MarkupElement pipeElement) { 
+            //get the index of the element
+            int index = pipeElement.Index;
+
+            //odd/even?
+            if (p_Odd) { return index % 2 != 0; }
+            if (p_Even) { return index % 2 == 0; }
+
+            //substitute for n?
+            if (!p_HasNSubstitute) { 
+                //index has to match the result of the calculation
+                return index == p_ExpressionResult;
+            }
+
+            //use the n substitute as an accumulator and
+            //see if the result of the expression
+            //matches the elements index.
+            ArithmeticSubstitute n = new ArithmeticSubstitute(
+                new ArithmeticOperand(0),
+                'n');
+            LinkedList<ArithmeticSubstitute> subs = new LinkedList<ArithmeticSubstitute>();
+            subs.AddLast(n);
+            for (int c = 0; c <= index; c++) {
+                n.Operand.setValue(c, false, true);
+
+                ArithmeticNumeric res = p_Expression.Calculate(subs);
+                if (res == index) { return true; }
+            }
+
+            //no match
+            return false;
+        }
+
 
         private byte toLower(byte b) {
             if (b >= 'A' && b <= 'Z') {
                 return (byte)((b - 'A') + 'a');
             }
             return b;
+        }
+
+        public override string ToString() {
+            return p_Expression.Flatten().ToString();
         }
     }
 }

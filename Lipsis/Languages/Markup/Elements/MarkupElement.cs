@@ -8,7 +8,8 @@ namespace Lipsis.Languages.Markup {
         private string p_TagName;
         private LinkedList<MarkupAttribute> p_Attributes;
 
-        internal MarkupElement(string tagName) {
+        internal MarkupElement(string tagName) : this(tagName, new LinkedList<Node>()) { }
+        internal MarkupElement(string tagName, LinkedList<Node> children) : base(children) {
             p_TagName = tagName;
             p_Attributes = new LinkedList<MarkupAttribute>();
         }
@@ -415,6 +416,12 @@ namespace Lipsis.Languages.Markup {
 
         #endregion
 
+        protected override Node CloneCreateNode(Node original) {
+            return new MarkupElement(
+                (original as MarkupElement).TagName);
+            
+        }
+
         public override string ToString() {
             //define the buffer to return, start with the start of the tag
             string buffer = "";
@@ -433,6 +440,7 @@ namespace Lipsis.Languages.Markup {
             buffer += ">";
             return buffer;
         }
+
 
         [Flags]
         public enum FindMode { 

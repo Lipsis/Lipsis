@@ -490,7 +490,7 @@ namespace Lipsis.Core {
                         if (functionNameStart != functionNameEnd) {                            
                             //it's a function, lookup its name
                             data = dataCopy;
-                            string functionName = Helpers.ReadString(functionNameStart, functionNameEnd);
+                            string functionName = Helpers.ReadString(functionNameStart, functionNameEnd, Encoding.ASCII);
 
                             //find the function from the functions list
                             IEnumerator<ArithmeticFunction> e = functions.GetEnumerator();
@@ -577,7 +577,7 @@ namespace Lipsis.Core {
                     if (memSize > resultSize) { resultSize = memSize; }
 
                     //add the number as an operand
-                    string numStr = Helpers.ReadString(numPtr, numPtrEnd);
+                    string numStr = Helpers.ReadString(numPtr, numPtrEnd, Encoding.ASCII);
                     ArithmeticNumeric opValue = ArithmeticNumeric.FromString(numStr, isDecimal, charLength);
                     operands.AddLast(new ArithmeticOperand(opValue, negativeFlag));
                     negativeFlag = false;

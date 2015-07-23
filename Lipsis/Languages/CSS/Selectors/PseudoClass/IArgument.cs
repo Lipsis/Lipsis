@@ -1,3 +1,3 @@
 ﻿namespace Lipsis.Languages.CSS {
-    public interface ICSSPseudoClassArgument { }
+    public interface ICSSPseudoClassArgument : ICSSSelectable { }
 }

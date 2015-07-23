@@ -14,18 +14,31 @@ namespace Lipsis.Languages.CSS {
         }
 
         public static CSSSheet Parse(string data) {
-            return Parse(Encoding.ASCII.GetBytes(data));
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSSheet Parse(byte[] data) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Parse(ref ptr, ptr + data.Length);
-            }
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSSheet Parse(ref byte* data, int length) {
-            return Parse(ref data, data + length);
+            return Parse(ref data, length, Encoding.ASCII);
         }
         public static CSSSheet Parse(ref byte* data, byte* dataEnd) {
+            return Parse(ref data, dataEnd, Encoding.ASCII);
+        }
+
+        public static CSSSheet Parse(string data, Encoding encoder) {
+            return Parse(encoder.GetBytes(data), encoder);
+        }
+        public static CSSSheet Parse(byte[] data, Encoding encoder) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Parse(ref ptr, ptr + data.Length, encoder);
+            }
+        }
+        public static CSSSheet Parse(ref byte* data, int length, Encoding encoder) {
+            return Parse(ref data, data + length, encoder);
+        }
+        public static CSSSheet Parse(ref byte* data, byte* dataEnd, Encoding encoder) {
             CSSSheet sheet = new CSSSheet();
                    
             //read the declarations
@@ -109,7 +122,7 @@ namespace Lipsis.Languages.CSS {
 
                             #region ruleset?
                             if (isRuleset) {
-                                scope = CSSRuleSet.Parse(ref data, dataEnd);
+                                scope = CSSRuleSet.Parse(ref data, dataEnd, encoder);
                                 if (*data == '}') { data++; }
                             }
                             #endregion
@@ -117,7 +130,7 @@ namespace Lipsis.Languages.CSS {
                             #region declarations?
                             else {
                                 //read it as a CSSSheet to support nested at-rules
-                                scope = Parse(ref data, dataEnd);
+                                scope = Parse(ref data, dataEnd, encoder);
                                 if (*data == '}') { data++; }
                             }
                             #endregion
@@ -170,7 +183,8 @@ namespace Lipsis.Languages.CSS {
                         sheet,
                         new STRPTR(namePtr, nameEndPtr),
                         arguments,
-                        scope);
+                        scope,
+                        encoder);
                     continue;
                 }
                 #endregion
@@ -179,7 +193,7 @@ namespace Lipsis.Languages.CSS {
                 if (*data == '}') { break; }
 
                 //read the declaration
-                CSSDeclaration declaration = CSSDeclaration.Parse(ref data, dataEnd);
+                CSSDeclaration declaration = CSSDeclaration.Parse(ref data, dataEnd, encoder);
                 if (declaration == null) { break; }
 
                 //add the declaration
@@ -193,8 +207,8 @@ namespace Lipsis.Languages.CSS {
             return sheet;
         }
         
-        private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope) {
-            string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR);
+        private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope, Encoding encoder) {
+            string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR, encoder);
 
 
             return;

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Lipsis.Core {
     public static partial class Helpers {
-        public static unsafe string ReadString(byte* ptr, byte* endPtr) {
+        public static unsafe string ReadString(byte* ptr, byte* endPtr, Encoding encoder) {
             //blank string?
             if (endPtr == (byte*)0) { return ""; }
 
@@ -19,8 +19,8 @@ namespace Lipsis.Core {
             }
 
             //read the block of data as a unicode string of characters
-            string str = Encoding.UTF8.GetString(buffer, 0, length);
-
+            string str = encoder.GetString(buffer, 0, length);
+            
             //clean up
             buffer = null;
             return str;

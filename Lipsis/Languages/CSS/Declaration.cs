@@ -44,18 +44,31 @@ namespace Lipsis.Languages.CSS {
         public CSSRuleSet RuleSet { get { return p_Ruleset; } }
 
         public static CSSDeclaration Parse(string data) {
-            return Parse(Encoding.ASCII.GetBytes(data));
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSDeclaration Parse(byte[] data) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Parse(ref ptr, ptr + data.Length);
-            }
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSDeclaration Parse(ref byte* data, int length) {
-            return Parse(ref data, data + length);
+            return Parse(ref data, length, Encoding.ASCII);
         }
         public static CSSDeclaration Parse(ref byte* data, byte* dataEnd) {
+            return Parse(ref data, dataEnd, Encoding.ASCII);
+        }
+
+        public static CSSDeclaration Parse(string data, Encoding encoder) {
+            return Parse(encoder.GetBytes(data), encoder);
+        }
+        public static CSSDeclaration Parse(byte[] data, Encoding encoder) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Parse(ref ptr, ptr + data.Length, encoder);
+            }
+        }
+        public static CSSDeclaration Parse(ref byte* data, int length, Encoding encoder) {
+            return Parse(ref data, data + length, encoder);
+        }
+        public static CSSDeclaration Parse(ref byte* data, byte* dataEnd, Encoding encoder) {
             //read selectors
             LinkedList<CSSSelector> selectors = new LinkedList<CSSSelector>();
             while (data < dataEnd) {
@@ -68,8 +81,8 @@ namespace Lipsis.Languages.CSS {
                     }
                 }
 
-                //
-                CSSSelector selector = CSSSelector.Parse(ref data, dataEnd);
+                //parse the selector
+                CSSSelector selector = CSSSelector.Parse(ref data, dataEnd, encoder);
                 selectors.AddLast(selector);
                 if (*data != ',') { break; }
                 data++;
@@ -78,7 +91,7 @@ namespace Lipsis.Languages.CSS {
             //read the css rules
             if (*data != '{') { return null; }
             data++;
-            CSSRuleSet set = CSSRuleSet.Parse(ref data, dataEnd);
+            CSSRuleSet set = CSSRuleSet.Parse(ref data, dataEnd, encoder);
 
             return new CSSDeclaration(
                 selectors,

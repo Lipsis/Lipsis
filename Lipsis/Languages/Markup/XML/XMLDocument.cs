@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Collections.Generic;
 
 namespace Lipsis.Languages.Markup.XML {
@@ -8,9 +9,13 @@ namespace Lipsis.Languages.Markup.XML {
         
         #region Wrapper constructors for MarkupDocument
 
-        public XMLDocument(string data) : base(data, "span", new LinkedList<string>(), new LinkedList<string>()) { }
-        public XMLDocument(byte[] data) : base(data, "span", new LinkedList<string>(), new LinkedList<string>()) { }
-        public unsafe XMLDocument(byte* data, int length) : base(data, length, "span", new LinkedList<string>(), new LinkedList<string>()) { }
+        public XMLDocument(string data) : this(data, Encoding.ASCII) { }
+        public XMLDocument(byte[] data) : this(data, Encoding.ASCII) { }
+        public unsafe XMLDocument(byte* data, int length) : this(data, length, Encoding.ASCII) { }
+
+        public XMLDocument(string data, Encoding encoder) : base(data, "span", new LinkedList<string>(), new LinkedList<string>(), encoder) { }
+        public XMLDocument(byte[] data, Encoding encoder) : base(data, "span", new LinkedList<string>(), new LinkedList<string>(), encoder) { }
+        public unsafe XMLDocument(byte* data, int length, Encoding encoder) : base(data, length, "span", new LinkedList<string>(), new LinkedList<string>(), encoder) { }
 
         #endregion
 
@@ -46,8 +51,12 @@ namespace Lipsis.Languages.Markup.XML {
             p_Version = new Version(versionStr);
             
         }
+
         public static XMLDocument FromFile(string filename) {
-            return new XMLDocument(File.ReadAllBytes(filename));
+            return FromFile(filename, Encoding.ASCII);
+        }
+        public static XMLDocument FromFile(string filename, Encoding encoder) {
+            return new XMLDocument(File.ReadAllBytes(filename), encoder);
         }
     }
 }

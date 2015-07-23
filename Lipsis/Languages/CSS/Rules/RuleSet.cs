@@ -96,18 +96,31 @@ namespace Lipsis.Languages.CSS {
         }
 
         public static CSSRuleSet Parse(string data) {
-            return Parse(Encoding.ASCII.GetBytes(data));
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSRuleSet Parse(byte[] data) {
-            fixed (byte* fixedPtr = data) {
-                byte* ptr = fixedPtr;
-                return Parse(ref ptr, ptr + data.Length);
-            }
+            return Parse(data, Encoding.ASCII);
         }
         public static CSSRuleSet Parse(ref byte* data, int length) {
-            return Parse(ref data, data + length);
+            return Parse(ref data, length, Encoding.ASCII);
         }
         public static CSSRuleSet Parse(ref byte* data, byte* dataEnd) {
+            return Parse(ref data, dataEnd, Encoding.ASCII);
+        }
+
+        public static CSSRuleSet Parse(string data, Encoding encoder) {
+            return Parse(encoder.GetBytes(data), encoder);
+        }
+        public static CSSRuleSet Parse(byte[] data, Encoding encoder) {
+            fixed (byte* fixedPtr = data) {
+                byte* ptr = fixedPtr;
+                return Parse(ref ptr, ptr + data.Length, encoder);
+            }
+        }
+        public static CSSRuleSet Parse(ref byte* data, int length, Encoding encoder) {
+            return Parse(ref data, data + length, encoder);
+        }
+        public static CSSRuleSet Parse(ref byte* data, byte* dataEnd, Encoding encoder) {
             //define the rule set we add everything to
             CSSRuleSet buffer = new CSSRuleSet();
 
@@ -202,8 +215,8 @@ namespace Lipsis.Languages.CSS {
 
                     //create the rule
                     buffer.AddRule(
-                        Helpers.ReadString(nameStart, nameEnd),
-                        Helpers.ReadString(valueStart, valueEnd),
+                        Helpers.ReadString(nameStart, nameEnd, encoder),
+                        Helpers.ReadString(valueStart, valueEnd, encoder),
                         important);
 
                     //hit the end of this ruleset?

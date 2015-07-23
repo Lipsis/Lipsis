@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Collections.Generic;
 
 namespace Lipsis.Languages.Markup.HTML {
@@ -29,9 +30,14 @@ namespace Lipsis.Languages.Markup.HTML {
 
         #region Wrapper constructors for MarkupDocument
         public HTMLDocument() : base() { }
-        public HTMLDocument(string data) : base(data, "span", p_TextTags, p_NoScopeTags) { }
-        public HTMLDocument(byte[] data) : base(data, "span", p_TextTags, p_NoScopeTags) { }
-        public unsafe HTMLDocument(byte* data, int length) : base(data, length, "span", p_TextTags, p_NoScopeTags) { }
+
+        public HTMLDocument(string data) : this(data, Encoding.ASCII) { }
+        public HTMLDocument(byte[] data) : this(data, Encoding.ASCII) { }
+        public unsafe HTMLDocument(byte* data, int length) : this(data, length, Encoding.ASCII) { }
+
+        public HTMLDocument(string data, Encoding encoder) : base(data, "span", p_TextTags, p_NoScopeTags, encoder) { }
+        public HTMLDocument(byte[] data, Encoding encoder) : base(data, "span", p_TextTags, p_NoScopeTags, encoder) { }
+        public unsafe HTMLDocument(byte* data, int length, Encoding encoder) : base(data, length, "span", p_TextTags, p_NoScopeTags, encoder) { }
         #endregion
 
         public string Title {
@@ -67,9 +73,11 @@ namespace Lipsis.Languages.Markup.HTML {
         }
 
 
-
         public static HTMLDocument FromFile(string filename) {
-            return new HTMLDocument(File.ReadAllBytes(filename));
+            return FromFile(filename, Encoding.ASCII);
+        }
+        public static HTMLDocument FromFile(string filename, Encoding encoder) {
+            return new HTMLDocument(File.ReadAllBytes(filename), encoder);
         }
     }
 }

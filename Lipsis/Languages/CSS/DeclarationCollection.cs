@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Lipsis.Languages.CSS {
 
-    public class CSSDeclarationCollection : ICSSScope {
+    public class CSSDeclarationCollection : ICSSScope, IEnumerable {
         private LinkedList<CSSDeclaration> p_Declarations;
 
         public CSSDeclarationCollection() {
@@ -35,6 +36,10 @@ namespace Lipsis.Languages.CSS {
             return p_Declarations.Remove(declaration);
         }
 
+        public LinkedList<CSSDeclaration> Declarations { get { return p_Declarations; } }
 
+        public IEnumerator GetEnumerator() {
+            return p_Declarations.GetEnumerator();
+        }
     }
 }

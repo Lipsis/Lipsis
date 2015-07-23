@@ -60,6 +60,9 @@ namespace Lipsis.Languages.CSS {
         _LIP_ARG_MAX_VALUE = NthOfType,
 
         _LIP_NTH_MIN = NthChild,
-        _LIP_NTH_MAX = NthOfType
+        _LIP_NTH_MAX = NthOfType,
+
+        _LIP_MIN = Default,
+        _LIP_MAX = _LIP_NTH_MAX,
     }   
 }
