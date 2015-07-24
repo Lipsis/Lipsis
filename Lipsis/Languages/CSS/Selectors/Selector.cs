@@ -210,17 +210,17 @@ namespace Lipsis.Languages.CSS {
                     bool isClass = false;
                     CSSPseudoClass classType = CSSPseudoClass.None;
                     string pseudoName = Helpers.ReadString(pseudoPtr, pseudoPtrEnd, encoder);
-                    pseudoName = pseudoName.Replace("-", "");
+                    pseudoName = pseudoName.ToLower();
                     if (elementOnly) {
-                        pseudoElement |= tryParseEnum<CSSPseudoElement>(pseudoName, out found);       
+                        pseudoElement |= parsePseudoElement(pseudoName, out found);      
                     }
 
                     if (!found) {
-                        classType = tryParseEnum<CSSPseudoClass>(pseudoName, out found);
+                        classType = parsePseudoClass(pseudoName, out found);
                         pseudoClass |= classType;
                         if (found) { isClass = true; }
                         if (!found && !elementOnly) {
-                            pseudoElement |= tryParseEnum<CSSPseudoElement>(pseudoName, out found);
+                            pseudoElement |= parsePseudoElement(pseudoName, out found);
                         }
 
                     }
@@ -303,15 +303,69 @@ namespace Lipsis.Languages.CSS {
                 (b >= '0' && b <= '9');
         }
 
-        private static T tryParseEnum<T>(string value, out bool success) where T : struct {
-            try { 
-                T val = (T)Enum.Parse(typeof(T), value, true);
-                success = true;
-                return val;
+        private static CSSPseudoElement parsePseudoElement(string value, out bool success) {
+            success = true;
+            switch (value) { 
+                case "after": return CSSPseudoElement.After;
+                case "before": return CSSPseudoElement.Before;
+                case "first-letter": return CSSPseudoElement.FirstLetter;
+                case "first-line": return CSSPseudoElement.FirstLine;
+                case "selection": return CSSPseudoElement.Selection;
+                case "backdrop": return CSSPseudoElement.Backdrop;
+
+                default:
+                    success = false;
+                    return CSSPseudoElement.None;
             }
-            catch {
-                success = false;
-                return default(T); 
+
+        }
+        private static CSSPseudoClass parsePseudoClass(string value, out bool success) {
+            success = true;
+            switch (value) {
+                case "default": return CSSPseudoClass.Default;
+                case "active": return CSSPseudoClass.Active;
+                case "checked": return CSSPseudoClass.Checked;
+                case "disabled": return CSSPseudoClass.Disabled;
+                case "empty": return CSSPseudoClass.Empty;
+                case "enabled": return CSSPseudoClass.Enabled;
+                case "first": return CSSPseudoClass.First;
+                case "first-child": return CSSPseudoClass.FirstChild;
+                case "first-of-type": return CSSPseudoClass.FirstOfType;
+                case "fullscreen": return CSSPseudoClass.FullScreen;
+                case "focus": return CSSPseudoClass.Focus;
+                case "hover": return CSSPseudoClass.Hover;
+                case "indeterminate": return CSSPseudoClass.Indeterminate;
+                case "in-range": return CSSPseudoClass.InRange;
+                case "invalid": return CSSPseudoClass.Invalid;
+                case "last-child": return CSSPseudoClass.LastChild;
+                case "last-of-type": return CSSPseudoClass.LastOfType;
+                case "left": return CSSPseudoClass.Left;
+                case "link": return CSSPseudoClass.Link;
+                case "only-child": return CSSPseudoClass.OnlyChild;
+                case "only-of-type": return CSSPseudoClass.OnlyOfType;
+                case "optional": return CSSPseudoClass.Optional;
+                case "out-of-range": return CSSPseudoClass.OutOfRange;
+                case "read-only": return CSSPseudoClass.ReadOnly;
+                case "read-write": return CSSPseudoClass.ReadWrite;
+                case "required": return CSSPseudoClass.Required;
+                case "right": return CSSPseudoClass.Right;
+                case "root": return CSSPseudoClass.Root;
+                case "scope": return CSSPseudoClass.Scope;
+                case "target": return CSSPseudoClass.Target;
+                case "valid": return CSSPseudoClass.Valid;
+                case "visited": return CSSPseudoClass.Visited;
+
+                case "dir": return CSSPseudoClass.Dir;
+                case "lang": return CSSPseudoClass.Lang;
+                case "not": return CSSPseudoClass.Not;
+                case "nth-child": return CSSPseudoClass.NthChild;
+                case "nth-last-child": return CSSPseudoClass.NthLastChild;
+                case "nth-last-of-type": return CSSPseudoClass.NthLastOfType;
+                case "nth-of-type": return CSSPseudoClass.NthOfType;
+
+                default:
+                    success = false;
+                    return CSSPseudoClass.None;
             }
         }
 

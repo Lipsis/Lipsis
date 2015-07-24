@@ -21,6 +21,7 @@ namespace Lipsis.Languages.CSS {
 
         internal unsafe CSSPseudoClass_Nth(byte* data, byte* dataEnd, CSSPseudoClass pseudoClass, out bool success) {
             success = true;
+            
             #region odd/even?
             if (toLower(*data) == 'o' &&
                 toLower(*(data + 1)) == 'd' &&
