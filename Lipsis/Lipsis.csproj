@@ -78,6 +78,7 @@
     <Compile Include="Languages\CSS\Selectors\Selector.cs" />
     <Compile Include="Languages\CSS\Selectors\Type.cs" />
     <Compile Include="Languages\CSS\Sheet.cs" />
+    <Compile Include="Languages\Markup\Elements\IElementFactory.cs" />
     <Compile Include="Languages\Markup\HTML\HTMLDocument.cs" />
     <Compile Include="Languages\Markup\MarkupAttribute.cs" />
     <Compile Include="Languages\Markup\Elements\MarkupElement.cs" />

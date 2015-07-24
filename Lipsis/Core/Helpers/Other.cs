@@ -116,19 +116,19 @@ namespace Lipsis.Core {
 
 
 
-        public static long Time(TimingCallback callback) {
+        public static double Time(TimingCallback callback) {
             Stopwatch watch = new Stopwatch();
             watch.Start();
             callback();
             watch.Stop();
-            return watch.ElapsedTicks;
+            return (watch.ElapsedTicks * 1.0f / Stopwatch.Frequency) * 1000;
         }
-        public static long Time<T>(T state, TimingCallbackWithState<T> callback) {
+        public static double Time<T>(T state, TimingCallbackWithState<T> callback) {
             Stopwatch watch = new Stopwatch();
             watch.Start();
             callback(state);
             watch.Stop();
-            return watch.ElapsedTicks;
+            return (watch.ElapsedTicks * 1.0f / Stopwatch.Frequency) * 1000;
         }
 
         public delegate void TimingCallback();

@@ -13,9 +13,9 @@ namespace Lipsis.Languages.Markup.XML {
         public XMLDocument(byte[] data) : this(data, Encoding.ASCII) { }
         public unsafe XMLDocument(byte* data, int length) : this(data, length, Encoding.ASCII) { }
 
-        public XMLDocument(string data, Encoding encoder) : base(data, "span", new LinkedList<string>(), new LinkedList<string>(), encoder) { }
-        public XMLDocument(byte[] data, Encoding encoder) : base(data, "span", new LinkedList<string>(), new LinkedList<string>(), encoder) { }
-        public unsafe XMLDocument(byte* data, int length, Encoding encoder) : base(data, length, "span", new LinkedList<string>(), new LinkedList<string>(), encoder) { }
+        public XMLDocument(string data, Encoding encoder) : base(data, "span", new LinkedList<string>(), new LinkedList<string>(), MarkupStandardElementFactory.Instance, encoder) { }
+        public XMLDocument(byte[] data, Encoding encoder) : base(data, "span", new LinkedList<string>(), new LinkedList<string>(), MarkupStandardElementFactory.Instance, encoder) { }
+        public unsafe XMLDocument(byte* data, int length, Encoding encoder) : base(data, length, "span", new LinkedList<string>(), new LinkedList<string>(), MarkupStandardElementFactory.Instance, encoder) { }
 
         #endregion
 

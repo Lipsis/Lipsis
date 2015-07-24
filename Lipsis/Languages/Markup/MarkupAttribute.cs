@@ -52,6 +52,10 @@ namespace Lipsis.Languages.Markup {
 
 
         public override string ToString() {
+            //return just the value?
+            if (p_Name == null) { return "\"" + p_Value + "\""; }
+            if (p_Value == null) { return p_Name; }
+
             return
                 Name + "=\"" + Value + "\"";
         }

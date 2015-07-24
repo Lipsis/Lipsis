@@ -36,9 +36,9 @@ namespace Lipsis.Languages.Markup.HTML {
         public HTMLDocument(byte[] data) : this(data, Encoding.ASCII) { }
         public unsafe HTMLDocument(byte* data, int length) : this(data, length, Encoding.ASCII) { }
 
-        public HTMLDocument(string data, Encoding encoder) : base(data, "span", p_TextTags, p_NoScopeTags, encoder) { }
-        public HTMLDocument(byte[] data, Encoding encoder) : base(data, "span", p_TextTags, p_NoScopeTags, encoder) { }
-        public unsafe HTMLDocument(byte* data, int length, Encoding encoder) : base(data, length, "span", p_TextTags, p_NoScopeTags, encoder) { }
+        public HTMLDocument(string data, Encoding encoder) : base(data, "span", p_TextTags, p_NoScopeTags, MarkupStandardElementFactory.Instance, encoder) { }
+        public HTMLDocument(byte[] data, Encoding encoder) : base(data, "span", p_TextTags, p_NoScopeTags, MarkupStandardElementFactory.Instance, encoder) { }
+        public unsafe HTMLDocument(byte* data, int length, Encoding encoder) : base(data, length, "span", p_TextTags, p_NoScopeTags, MarkupStandardElementFactory.Instance, encoder) { }
         #endregion
 
         public string Title {

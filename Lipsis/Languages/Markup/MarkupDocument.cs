@@ -24,26 +24,26 @@ namespace Lipsis.Languages.Markup {
         }
 
         #region Wrapper constructors to Parse function
-        public MarkupDocument(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags)
-            : this(data, textTagName, textTags, noScopeTags, Encoding.ASCII) { }
-        public MarkupDocument(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags)
-            : this(data, textTagName, textTags, noScopeTags, Encoding.ASCII) { }
-        public MarkupDocument(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags)
-            : this(data, length, textTagName, textTags, noScopeTags, Encoding.ASCII) { }
+        public MarkupDocument(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory)
+            : this(data, textTagName, textTags, noScopeTags, factory, Encoding.ASCII) { }
+        public MarkupDocument(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory)
+            : this(data, textTagName, textTags, noScopeTags, factory, Encoding.ASCII) { }
+        public MarkupDocument(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory)
+            : this(data, length, textTagName, textTags, noScopeTags, factory, Encoding.ASCII) { }
 
-        public MarkupDocument(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, Encoding encoder) {
+        public MarkupDocument(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, Encoding encoder) {
             p_Root = new MarkupElement("{LIP_DOCUMENT}");
-            Parse(data, textTagName, textTags, noScopeTags, p_Root, encoder);
+            Parse(data, textTagName, textTags, noScopeTags, p_Root, factory, encoder);
             OnDocumentLoaded();
         }
-        public MarkupDocument(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, Encoding encoder) {
+        public MarkupDocument(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, Encoding encoder) {
             p_Root = new MarkupElement("{LIP_DOCUMENT}");
-            Parse(data, textTagName, textTags, noScopeTags, p_Root, encoder);
+            Parse(data, textTagName, textTags, noScopeTags, p_Root, factory, encoder);
             OnDocumentLoaded();
         }
-        public MarkupDocument(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, Encoding encoder) {
+        public MarkupDocument(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, Encoding encoder) {
             p_Root = new MarkupElement("{LIP_DOCUMENT}");
-            Parse(data, length, textTagName, textTags, noScopeTags, p_Root, encoder);
+            Parse(data, length, textTagName, textTags, noScopeTags, p_Root, factory, encoder);
             OnDocumentLoaded();
         }
         #endregion
@@ -179,37 +179,43 @@ namespace Lipsis.Languages.Markup {
         }
 
         #region Parser
-        public static LinkedList<MarkupElement> Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+
+
+        public static LinkedList<MarkupElement> Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory) {
             return Parse(
                 data,
                 textTagName,
                 textTags,
-                noScopeTags);
+                noScopeTags, 
+                factory);
         }
-        public static LinkedList<MarkupElement> Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags) {
+        public static LinkedList<MarkupElement> Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory) {
             return Parse(
                 data,
                 textTagName,
                 textTags,
-                noScopeTags);
+                noScopeTags,
+                factory);
         }
-        public static void Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+        public static void Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, MarkupElement root) {
             Parse(
                 data,
                 textTagName,
                 textTags,
                 noScopeTags,
+                factory,
                 Encoding.ASCII);
         }
-        public static void Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+        public static void Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, MarkupElement root) {
             Parse(
                 data,
                 textTagName,
                 textTags,
                 noScopeTags,
+                factory,
                 Encoding.ASCII);
         }
-        public static void Parse(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root) {
+        public static void Parse(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, MarkupElement root) {
             Parse(
                 data,
                 length,
@@ -217,13 +223,14 @@ namespace Lipsis.Languages.Markup {
                 textTags,
                 noScopeTags,
                 root,
+                factory,
                 Encoding.ASCII);
         }
 
-        public static LinkedList<MarkupElement> Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, Encoding encoder) {
-            return Parse(data, textTagName, textTags, noScopeTags, encoder);
+        public static LinkedList<MarkupElement> Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, Encoding encoder) {
+            return Parse(data, textTagName, textTags, noScopeTags, factory, encoder);
         }
-        public static LinkedList<MarkupElement> Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, Encoding encoder) {
+        public static LinkedList<MarkupElement> Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, Encoding encoder) {
             MarkupElement root = new MarkupElement("{LIP_DOCUMENT");
             
             Parse(
@@ -232,6 +239,7 @@ namespace Lipsis.Languages.Markup {
                 textTags,
                 noScopeTags,
                 root,
+                factory,
                 encoder);
 
 
@@ -248,15 +256,15 @@ namespace Lipsis.Languages.Markup {
             e.Dispose();
             return buffer;
         }
-        public static void Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root, Encoding encoder) {
-            Parse(encoder.GetBytes(data), textTagName, textTags, noScopeTags, root, encoder);
+        public static void Parse(string data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root, IMarkupElementFactory factory, Encoding encoder) {
+            Parse(encoder.GetBytes(data), textTagName, textTags, noScopeTags, root, factory, encoder);
         }
-        public static void Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root, Encoding encoder) {
+        public static void Parse(byte[] data, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root, IMarkupElementFactory factory, Encoding encoder) {
             fixed (byte* ptr = data) {
-                Parse(ptr, data.Length, textTagName, textTags, noScopeTags, root, encoder);
+                Parse(ptr, data.Length, textTagName, textTags, noScopeTags, root, factory, encoder);
             }
         }
-        public static void Parse(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root, Encoding encoder) {
+        public static void Parse(byte* data, int length, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, MarkupElement root, IMarkupElementFactory factory, Encoding encoder) {
             //define the pointer which is right at the end of the data
             byte* dataEnd = data + length;
 
@@ -406,7 +414,7 @@ namespace Lipsis.Languages.Markup {
                                     (oldCurrent as MarkupTextElement).Text = str;
                                 }
                                 else {
-                                    oldCurrent.AddChild(new MarkupTextElement(textTagName, str));
+                                    oldCurrent.AddChild(factory.CreateText(textTagName, str));
                                 }      
                             }
                         }
@@ -430,9 +438,9 @@ namespace Lipsis.Languages.Markup {
                     MarkupElement element;
                     string tagNameStr = Helpers.ReadString(tagNamePtr, tagNamePtrEnd, encoder);
                     if (textTags.Contains(tagNameStr.ToLower())) {
-                        element = new MarkupTextElement(tagNameStr, "");
+                        element = factory.CreateText(tagNameStr, "");
                     }
-                    else { element = new MarkupElement(tagNameStr); }
+                    else { element = factory.Create(tagNameStr); }
                     
                     //flag to show if the tag terminates with a "/>"
                     //or has no scope.
@@ -457,6 +465,19 @@ namespace Lipsis.Languages.Markup {
                             break;
                         }
 
+                        //is the attribute a quote? 
+                        if (*data == '"' || *data == '\'') {                            
+                            //read as a string and set the attributes name as null
+                            //(since it's just a value)
+                            byte* valuePtr, valuePtrEnd;
+                            readStringValue(ref data, dataEnd, out valuePtr, out valuePtrEnd, tagHasQM, ref closeCharFound);
+
+                            element.AddAttribute(
+                                null,
+                                Helpers.ReadString(valuePtr, valuePtrEnd, encoder));
+                            continue;
+                        }
+
                         //read the name
                         byte* attrNamePtr, attrNamePtrEnd;
                         if (readName(ref data, dataEnd, out attrNamePtr, out attrNamePtrEnd, false, tagHasQM, ref closeCharFound)) { break; }
@@ -475,10 +496,12 @@ namespace Lipsis.Languages.Markup {
                         }
 
                         //add the attribute
+                        string valueString =
+                            (attrValuePtrEnd == (byte*)0) ? null :
+                            Helpers.ReadString(attrValuePtr, attrValuePtrEnd, encoder);
                         element.AddAttribute(
                             Helpers.ReadString(attrNamePtr, attrNamePtrEnd, encoder),
-                            Helpers.ReadString(attrValuePtr, attrValuePtrEnd, encoder));
-                        
+                            valueString);
                     }
 
                     #endregion
@@ -500,7 +523,7 @@ namespace Lipsis.Languages.Markup {
                                (current as MarkupTextElement).Text = str;
                             }
                             else {
-                                current.AddChild(new MarkupTextElement(textTagName, str));
+                                current.AddChild(factory.CreateText(textTagName, str));
                             }                            
                         }
                     }
@@ -538,7 +561,7 @@ namespace Lipsis.Languages.Markup {
             if (innerTextBufferPtrEnd != innerTextBufferPtr &&
                 innerTextBufferPtrEnd > innerTextBufferPtr &&
                 !isEmptyData(innerTextBufferPtr, innerTextBufferPtrEnd - 1)) {
-                    current.AddChild(new MarkupTextElement(
+                    current.AddChild(factory.CreateText(
                         textTagName,
                         Helpers.ReadString(
                             innerTextBufferPtr,
@@ -554,6 +577,7 @@ namespace Lipsis.Languages.Markup {
             }
             destructCurrentNameList.Dispose();
         }
+
 
         private static unsafe bool readName(ref byte* ptr, byte* endPtr, out byte* strStart, out byte* strEnd, bool valueMode, bool tagHasQM, ref bool closeCharFound) {
             //returns false if the end of stream was NOT hit.
@@ -585,6 +609,7 @@ namespace Lipsis.Languages.Markup {
                         *ptr != ':' &&
                         *ptr != '-' &&
                         *ptr != '@' &&
+                        *ptr != '_' &&
                         !((*ptr >= 'a' && *ptr <= 'z') ||
                           (*ptr >= 'A' && *ptr <= 'Z') ||
                           (*ptr >= '0' && *ptr <= '9'))) {
@@ -720,7 +745,7 @@ namespace Lipsis.Languages.Markup {
         }
         public MarkupElement Root { get { return p_Root; } }
 
-        public static MarkupDocument FromFile(string filename, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, Encoding encoder) {
+        public static MarkupDocument FromFile(string filename, string textTagName, LinkedList<string> textTags, LinkedList<string> noScopeTags, IMarkupElementFactory factory, Encoding encoder) {
             //read the file
             byte[] data = File.ReadAllBytes(filename);
             MarkupDocument doc = new MarkupDocument(
@@ -728,6 +753,7 @@ namespace Lipsis.Languages.Markup {
                 textTagName,
                 textTags,
                 noScopeTags,
+                factory,
                 encoder);
             data = null;
             return doc;

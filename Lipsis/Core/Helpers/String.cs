@@ -3,6 +3,7 @@ using System.Text;
 
 namespace Lipsis.Core {
     public static partial class Helpers {
+
         public static unsafe string ReadString(byte* ptr, byte* endPtr, Encoding encoder) {
             //blank string?
             if (endPtr == (byte*)0) { return ""; }
@@ -10,6 +11,7 @@ namespace Lipsis.Core {
             //read the block of memory which the string is in
             //into a buffer
             int length = (int)(endPtr - ptr) + 1;
+            if (length == 0) { return ""; }
             byte[] buffer = new byte[length];
             fixed (byte* locked = buffer) {
                 byte* writePtr = locked;
