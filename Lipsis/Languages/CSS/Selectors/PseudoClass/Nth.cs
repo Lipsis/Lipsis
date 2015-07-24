@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Lipsis.Core;
 using Lipsis.Languages.Markup;
 namespace Lipsis.Languages.CSS {
-    public sealed class CSSPseudoClass_Nth : ICSSPseudoClassArgument {
+    internal sealed class CSSPseudoClass_Nth : ICSSPseudoClassArgument {
         private static ArithmeticFunction p_SqrtFunction;
         static CSSPseudoClass_Nth() {
             p_SqrtFunction = ArithmeticFunction.FromDelegate(

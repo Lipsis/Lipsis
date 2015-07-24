@@ -4,6 +4,11 @@ namespace Lipsis.Languages.CSS {
 
     [Flags]
     public enum CSSPseudoElement { 
+        _LIP_MIN = After,
+        _LIP_MAX = Backdrop,
+
+
+
         None = 0,
         After = 0x1,
         Before = 0x2,
@@ -13,7 +18,5 @@ namespace Lipsis.Languages.CSS {
         Backdrop = 0x20,
 
 
-        _LIP_MIN = After,
-        _LIP_MAX = Backdrop
     }
 }

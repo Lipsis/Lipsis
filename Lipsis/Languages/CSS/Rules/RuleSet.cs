@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Text;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using Lipsis.Core;
 
 namespace Lipsis.Languages.CSS {
-    public unsafe class CSSRuleSet : ICSSScope {
+    public unsafe class CSSRuleSet : IEnumerable, ICSSScope {
         private static byte* IMPORTANT_STRING;
         private const int IMPORTANT_STRING_LENGTH = 9;
         static CSSRuleSet() {
@@ -247,6 +248,8 @@ namespace Lipsis.Languages.CSS {
             }
             return b;
         }
+
+        public IEnumerator GetEnumerator() { return p_Rules.GetEnumerator(); }
 
         public override string ToString() {
             CSSRule[] rules = Helpers.LinkedListToArray(p_Rules);

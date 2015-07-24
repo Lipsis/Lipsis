@@ -7,6 +7,25 @@ namespace Lipsis.Languages.CSS {
 
     [Flags]
     public enum CSSPseudoClass : long {
+
+        
+        /*
+            this is so we know where exactly in the enum value 
+            we should look for pseudo classes which have arguments
+        */
+
+        _LIP_ARG_MIN_VALUE = Dir,
+        _LIP_ARG_MAX_VALUE = NthOfType,
+
+        _LIP_NTH_MIN = NthChild,
+        _LIP_NTH_MAX = NthOfType,
+
+        _LIP_MIN = Default,
+        _LIP_MAX = _LIP_NTH_MAX,
+
+
+
+
         None            = 0x0,
         
         Default         = 0x1,
@@ -50,19 +69,5 @@ namespace Lipsis.Languages.CSS {
         NthLastChild    = 0x100000000000,
         NthLastOfType   = 0x200000000000,
         NthOfType       = 0x400000000000,
-
-        /*
-            this is so we know where exactly in the enum value 
-            we should look for pseudo classes which have arguments
-        */
-
-        _LIP_ARG_MIN_VALUE = Dir,
-        _LIP_ARG_MAX_VALUE = NthOfType,
-
-        _LIP_NTH_MIN = NthChild,
-        _LIP_NTH_MAX = NthOfType,
-
-        _LIP_MIN = Default,
-        _LIP_MAX = _LIP_NTH_MAX,
     }   
 }

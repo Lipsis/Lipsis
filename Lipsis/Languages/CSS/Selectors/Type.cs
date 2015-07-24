@@ -144,7 +144,7 @@ namespace Lipsis.Languages.CSS {
                 case CSSPseudoClass.OutOfRange: return "out-of-range";
                 case CSSPseudoClass.ReadOnly: return "read-only";
                 case CSSPseudoClass.ReadWrite: return "read-write";
-                
+                                
                 default:
                     return cls.ToString().ToLower();
             }

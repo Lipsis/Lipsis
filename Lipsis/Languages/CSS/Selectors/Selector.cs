@@ -98,7 +98,7 @@ namespace Lipsis.Languages.CSS {
                 #region read the name
                 //read the name (only this selector is not *)
                 byte* namePtr, nameEnd;
-                if (readName(ref data, dataEnd, out namePtr, out nameEnd)) { return new CSSSelector(buffer); }
+                readName(ref data, dataEnd, out namePtr, out nameEnd);
                 #endregion
 
                 #region read the attributes
@@ -123,7 +123,7 @@ namespace Lipsis.Languages.CSS {
                 #endregion
 
                 //read until we hit either a scope open or pseudo element/class character
-                if (Helpers.SkipWhitespaces(ref data, dataEnd)) { return new CSSSelector(buffer); }
+                Helpers.SkipWhitespaces(ref data, dataEnd);
                 if(*data == '[') {
                     while (data < dataEnd) {
                         if (*data == '{' ||
@@ -137,7 +137,18 @@ namespace Lipsis.Languages.CSS {
                             //skip to where the name begins
                             Helpers.SkipWhitespaces(ref data, dataEnd);
                             byte* attributeNamePtr, attributeNameEndPtr;
-                            if (readName(ref data, dataEnd, out attributeNamePtr, out attributeNameEndPtr)) { break; }
+                            readName(ref data, dataEnd, out attributeNamePtr, out attributeNameEndPtr);
+                            
+                            //just name ([name])
+                            if (*data == ']') { 
+                                data++;
+
+                                attributes.AddLast(new CSSSelectorAttribute(
+                                    Helpers.ReadString(attributeNamePtr, attributeNameEndPtr, encoder),
+                                    null,
+                                    CSSSelectorAttributeCompareType.HasAttribute));
+                                continue; 
+                            }
                             #endregion
 
                             #region read comparison type
@@ -161,7 +172,7 @@ namespace Lipsis.Languages.CSS {
                             //read the value
                             Helpers.SkipWhitespaces(ref data, dataEnd);
                             byte* valuePtr, valuePtrEnd;
-                            if (readStringValue(ref data, dataEnd, out valuePtr, out valuePtrEnd)) { break; }
+                            readStringValue(ref data, dataEnd, out valuePtr, out valuePtrEnd);
                             #endregion
 
                             //read to the end of the attribute
@@ -203,7 +214,7 @@ namespace Lipsis.Languages.CSS {
 
                     //read the pseudo
                     byte* pseudoPtr, pseudoPtrEnd;
-                    if (readName(ref data, dataEnd, out pseudoPtr, out pseudoPtrEnd)) { break; }
+                    readName(ref data, dataEnd, out pseudoPtr, out pseudoPtrEnd);
 
                     //process the name
                     bool found = false;
@@ -233,7 +244,7 @@ namespace Lipsis.Languages.CSS {
                         //read the value
                         Helpers.SkipWhitespaces(ref data, dataEnd);
                         byte* argumentPtr, argumentPtrEnd;
-                        if (readStringValue(ref data, dataEnd, out argumentPtr, out argumentPtrEnd)) { break; }
+                        readStringValue(ref data, dataEnd, out argumentPtr, out argumentPtrEnd);
 
                         //go to the end of the argument scope
                         while (data < dataEnd && *data++ != ')') ;
@@ -248,8 +259,9 @@ namespace Lipsis.Languages.CSS {
                                 arg = new CSSPseudoClass_Nth(argumentPtr, argumentPtrEnd + 1, classType, out addArg);
                         }
                         //not?
-                        else if (classType == CSSPseudoClass.Not) { 
-                            
+                        else if (classType == CSSPseudoClass.Not) {
+                            arg = new CSSPseudoClass_Not(argumentPtr, argumentPtrEnd + 1, encoder);
+                            addArg = true;
                         }
                         
 
@@ -380,6 +392,7 @@ namespace Lipsis.Languages.CSS {
                 }
                 data++;
             }
+            strEnd = dataEnd - 1;
             return true;
         }
         internal static bool readStringValue(ref byte* data, byte* dataEnd, out byte* strPtr, out byte* strEnd) { 

@@ -46,6 +46,11 @@ namespace Lipsis.Languages.CSS {
         }
 
         public override string ToString() {
+            //just return the name of the attribute?
+            if (p_CompareType == CSSSelectorAttributeCompareType.HasAttribute) {
+                return "[" + p_Name + "]";
+            }
+
             //define what the compare string is
             string compareStr = "=";
             switch (p_CompareType) {

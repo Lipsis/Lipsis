@@ -73,6 +73,7 @@
     <Compile Include="Languages\CSS\Selectors\Enums\PseudoClass.cs" />
     <Compile Include="Languages\CSS\Selectors\Enums\PseudoElement.cs" />
     <Compile Include="Languages\CSS\Selectors\PseudoClass\IArgument.cs" />
+    <Compile Include="Languages\CSS\Selectors\PseudoClass\Not.cs" />
     <Compile Include="Languages\CSS\Selectors\PseudoClass\Nth.cs" />
     <Compile Include="Languages\CSS\Selectors\Selector.cs" />
     <Compile Include="Languages\CSS\Selectors\Type.cs" />

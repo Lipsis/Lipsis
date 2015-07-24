@@ -5,6 +5,7 @@
         DashSplitPrefixMatch = 3,           //attr|=value
         PrefixMatch = 4,                    //attr^=value
         SuffixMatch = 5,                    //attr$=value
-        Contains = 6                        //attr*=value
+        Contains = 6,                       //attr*=value
+        HasAttribute = 7                    //attr
     }
 }
