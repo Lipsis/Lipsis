@@ -15,7 +15,8 @@ namespace Lipsis.Languages.Markup.HTML {
             //add the default tag names for tags with no scopes and text tags
             string[] noScopeTags = { 
                 "meta",
-                "link"    
+                "link",
+                "input"
             };
             string[] textTags = { 
                 "title",

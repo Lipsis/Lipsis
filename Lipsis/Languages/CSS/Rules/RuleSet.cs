@@ -123,7 +123,7 @@ namespace Lipsis.Languages.CSS {
         public static CSSRuleSet Parse(ref byte* data, byte* dataEnd, Encoding encoder) {
             //define the rule set we add everything to
             CSSRuleSet buffer = new CSSRuleSet();
-
+            
             //read the data
             while (data < dataEnd) {
                 #region skip comments

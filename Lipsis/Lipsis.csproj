@@ -54,7 +54,7 @@
     <Compile Include="Core\Arithmetic\Numeric.cs" />
     <Compile Include="Core\Arithmetic\Substitute.cs" />
     <Compile Include="Core\Helpers\Other.cs" />
-    <Compile Include="Core\Message\MessagePump.cs" />
+    <Compile Include="Core\MessagePump.cs" />
     <Compile Include="Core\Node.cs" />
     <Compile Include="Core\Arithmetic\Operator.cs" />
     <Compile Include="Core\Helpers\Array.cs" />
