@@ -60,6 +60,7 @@
     <Compile Include="Core\Helpers\Array.cs" />
     <Compile Include="Core\Helpers\Data.cs" />
     <Compile Include="Core\Helpers\String.cs" />
+    <Compile Include="Core\Unmanaged Objects\STRPTR.cs" />
     <Compile Include="Languages\CSS\Declaration.cs" />
     <Compile Include="Languages\CSS\DeclarationCollection.cs" />
     <Compile Include="Languages\CSS\Interfaces\ICSSSelectable.cs" />

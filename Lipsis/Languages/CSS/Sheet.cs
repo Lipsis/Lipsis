@@ -10,7 +10,7 @@ namespace Lipsis.Languages.CSS {
         private static STRPTR STR_NAMESPACE;
 
         static CSSSheet() {
-            STR_NAMESPACE = allocString("namespace");
+            STR_NAMESPACE = "namespace";
         }
 
         public static CSSSheet Parse(string data) {
@@ -208,49 +208,12 @@ namespace Lipsis.Languages.CSS {
         }
         
         private static void handleAtRule(CSSSheet sheet, STRPTR name, LinkedList<STRPTR> arguments, ICSSScope scope, Encoding encoder) {
-            string nameStr = Helpers.ReadString(name.PTR, name.ENDPRR, encoder);
+            string nameStr = name;
 
 
             return;
         }
 
-        private static bool compareStr(STRPTR str1, STRPTR str2, bool matchCase) {
-            return
-                compareStr(
-                str1.PTR,
-                str2.PTR,
-                str1.ENDPRR + 1,
-                str2.ENDPRR + 1,
-                matchCase);
-        }
-        private static bool compareStr(byte* ptr1, byte* ptr2, byte* ptrEnd1, byte* ptrEnd2, bool matchCase) { 
-            //same length?
-            if (ptrEnd1 - ptr1 != ptrEnd2 - ptr2) { return false; }
-
-            //read through the data
-            while (ptr1 < ptrEnd1) { 
-                //get the two bytes we compare and set them to lower case if
-                //we do not match case
-                byte b1 = *ptr1++;
-                byte b2 = *ptr2++;
-                if (!matchCase) {
-                    b1 = toLower(b1);
-                    b2 = toLower(b2);
-                }
-
-                //match?
-                if (b1 != b2) { return false; }
-            }
-
-            //no-mismatch found
-            return true;
-        }
-        private static byte toLower(byte b) {
-            if (b >= 'A' && b <= 'Z') {
-                return (byte)((b - 'A') + 'a');
-            }
-            return b;
-        }
         private static bool isBlank(byte* ptr, byte* ptrEnd) {
             while (ptr < ptrEnd) {
                 if (*ptr != ' ' &&
@@ -262,24 +225,6 @@ namespace Lipsis.Languages.CSS {
                 ptr++;
             }
             return true;
-        }
-        private static STRPTR allocString(string str) {
-            //alocate the string on the heap
-            IntPtr ptr = Marshal.StringToCoTaskMemAnsi(str);
-            byte* ptrUnmanaged = (byte*)ptr.ToPointer();
-
-            //return the STRPTR structure for the string
-            return new STRPTR(
-                ptrUnmanaged,
-                ptrUnmanaged + str.Length - 1);
-        }
-        private struct STRPTR {
-            public STRPTR(byte* ptr, byte* endPtr) {
-                PTR = ptr;
-                ENDPRR = endPtr;
-            }
-            public byte* PTR;
-            public byte* ENDPRR;
         }
     }
 }

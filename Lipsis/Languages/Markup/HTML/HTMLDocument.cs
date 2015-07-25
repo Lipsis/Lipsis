@@ -5,13 +5,9 @@ using System.Collections.Generic;
 
 namespace Lipsis.Languages.Markup.HTML {
     public class HTMLDocument : MarkupDocument {
-        private static LinkedList<string> p_NoScopeTags;
-        private static LinkedList<string> p_TextTags;
+        private static List<string> p_NoScopeTags;
+        private static List<string> p_TextTags;
         static HTMLDocument() { 
-            //initialize the no scope tags and text tags list
-            p_NoScopeTags = new LinkedList<string>();
-            p_TextTags = new LinkedList<string>();
-
             //add the default tag names for tags with no scopes and text tags
             string[] noScopeTags = { 
                 "meta",
@@ -22,11 +18,10 @@ namespace Lipsis.Languages.Markup.HTML {
                 "title",
                 "script",
                 "style",
-                "a",
                 "pre"
             };
-            foreach (string s in noScopeTags) { p_NoScopeTags.AddLast(s); }
-            foreach (string s in textTags) { p_TextTags.AddLast(s); }           
+            p_NoScopeTags = new List<string>(noScopeTags);
+            p_TextTags = new List<string>(textTags);         
         }
 
         #region Wrapper constructors for MarkupDocument
